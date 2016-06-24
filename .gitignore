@@ -1,0 +1,5 @@
+.idea/
+client/sketch
+client/startup
+server/dist
+server/node_modules

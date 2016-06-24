@@ -1,0 +1,26 @@
+{
+  "name": "ccjam2016",
+  "version": "1.0.0",
+  "description": "My CCJam2016 entry",
+  "main": "main.js",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.9.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-concat": "^2.6.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-watch": "^4.3.8"
+  },
+  "author": "Lemmmy",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "bluebird": "^3.4.1",
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "hat": "0.0.3",
+    "lodash": "^4.13.1",
+    "rethinkdbdash": "^2.3.8"
+  }
+}
