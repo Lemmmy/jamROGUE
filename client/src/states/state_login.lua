@@ -1,0 +1,173 @@
+local buffer = require("src/buffer.lua")
+
+local w, h = term.getSize()
+
+local login = {}
+
+function login.init(main)
+    login.main = main
+    login.username = ""
+    login.password = ""
+    login.flashUsername = false
+    login.flashPassword = false
+    login.focusedItem = 0
+    login.errorText = ""
+    login.checkingText = ""
+    login.checkingColour = colours.grey
+    login.latestCheckURL = ""
+end
+
+function login.draw()
+    buffer.setBackgroundColour(colours.black)
+    buffer.setTextColour(colours.grey)
+    buffer.setCursorPos(1, 1)
+    buffer.write(("\127"):rep(w))
+    buffer.setCursorPos(1, 3)
+    buffer.write(("\127"):rep(w))
+    buffer.setBackgroundColour(colours.lightGrey)
+    buffer.setTextColour(colours.white)
+    buffer.setCursorPos(1, 2)
+    buffer.write((" "):rep(w))
+    buffer.setCursorPos(2, 2)
+    buffer.write("\171 Log in to jamMUD")
+    buffer.setBackgroundColour(colours.black)
+
+    buffer.setCursorPos(4, 6)
+    buffer.setTextColour(colours.white)
+    buffer.write("Username:")
+
+    buffer.setCursorPos(4, 7)
+    if login.flashUsername then
+        buffer.setBackgroundColour(colours.red)
+        login.flashUsername = false
+    else
+        buffer.setBackgroundColour(login.focusedItem == 0 and colours.lightGrey or colours.grey)
+    end
+    buffer.write((" "):rep(w - 7))
+    buffer.setCursorPos(4, 7)
+    buffer.write(login.username)
+    buffer.setBackgroundColour(colours.black)
+
+    buffer.setCursorPos(4, 10)
+    buffer.setTextColour(colours.white)
+    buffer.write("Password:")
+
+    buffer.setCursorPos(4, 11)
+    if login.flashPassword then
+        buffer.setBackgroundColour(colours.red)
+        login.flashPassword = false
+    else
+        buffer.setBackgroundColour(login.focusedItem == 1 and colours.lightGrey or colours.grey)
+    end
+    buffer.write((" "):rep(w - 7))
+    buffer.setCursorPos(4, 11)
+    buffer.write(("*"):rep(math.min(#login.password, w - 7)))
+    buffer.setBackgroundColour(colours.black)
+
+    if login.errorText then
+        buffer.setCursorPos(4, 14)
+        buffer.setTextColour(colours.red)
+        buffer.write(login.errorText)
+        buffer.setTextColour(colours.white)
+    end
+
+    buffer.setCursorPos(w - (#"Log in" + 7), h - 2)
+    buffer.setBackgroundColour(colours.green)
+    buffer.write((" "):rep(2) .. "Log in" .. (" "):rep(2))
+    buffer.setBackgroundColour(colours.black)
+    buffer.setTextColour(colours.green)
+    buffer.setCursorPos(w - (#"Log in" + 7), h - 1)
+    buffer.write(("\131"):rep(#"Log in" + 4))
+    buffer.setBackgroundColour(colours.green)
+    buffer.setTextColour(colours.black)
+    buffer.setCursorPos(w - (#"Log in" + 7), h - 3)
+    buffer.write(("\143"):rep(#"Log in" + 4))
+    buffer.setBackgroundColour(colours.black)
+    buffer.setTextColour(colours.white)
+end
+
+function login.keyUp(key, keycode)
+    if key == "down" or key == "tab" then
+        login.focusedItem = (login.focusedItem + 1) % 2
+    elseif key == "up" then
+        login.focusedItem = (login.focusedItem - 1) % 2
+    elseif key == "enter" then
+        login.login()
+    end
+end
+
+function login.key(key, keycode)
+    if key == "backspace" then
+        if login.focusedItem == 0 then
+            if #login.username > 0 then
+                login.username = login.username:sub(1, #login.username - 1)
+            else
+                login.flashUsername = true
+            end
+        elseif login.focusedItem == 1 then
+            if #login.password > 0 then
+                login.password = login.password:sub(1, #login.password - 1)
+            else
+                login.flashPassword = true
+            end
+        end
+    end
+end
+
+function login.mouseClick(button, x, y)
+    if button == 1 then
+        if x == 2 and y == 2 then
+            login.main.changeState("menu")
+        elseif x >= 4 and x <= w - 4 and y == 7 then
+            login.focusedItem = 0
+        elseif x >= 4 and x <= w - 4 and y == 11 then
+            login.focusedItem = 1
+        elseif x >= w - (#"Log in" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
+            login.login()
+        end
+    end
+end
+
+function login.char(char)
+    if login.focusedItem == 0 then
+        if #login.username >= 15 then
+            login.flashUsername = true
+        else
+            login.username = login.username .. char
+        end
+    elseif login.focusedItem == 1 then
+        login.password = login.password .. char
+    end
+end
+
+function login.paste(paste)
+    if login.focusedItem == 0 then
+        for char in paste:gmatch(".") do
+            if #login.username >= 15 then
+                login.flashUsername = true
+
+                break
+            else
+                login.username = login.username .. char
+            end
+        end
+    elseif login.focusedItem == 1 then
+        login.password = login.password .. paste
+    end
+end
+
+function login.login()
+    login.errorText = ""
+
+    if #login.username < 3 or #login.username > 15 or not login.username:find("^[a-z0-9_]+$") then
+        login.flashUsername = true
+        login.errorText = "Invalid username"
+    end
+
+    if #login.password <= 0 then
+        login.flashPassword = true
+        login.errorText = "Missing password"
+    end
+end
+
+return login
