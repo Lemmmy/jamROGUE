@@ -47,7 +47,7 @@ function menu.draw()
     end
 
     if menu.main.stateTime <= 2 then
-        menu.logoX = ease.outQuint(math.min(menu.main.stateTime, 1.2), 1, math.floor((w - menu.logo.width) / 2) + 1, 1.2)
+        menu.logoX = ease.outQuint(math.min(menu.main.stateTime, 1.2), 1, math.floor((w - menu.logo.width) / 2), 1.2)
         menu.loginX = ease.outQuint(math.min(menu.main.stateTime, 1.4), 1, math.floor(w / 2) + 1, 1.4)
         menu.registerX = ease.outQuint(math.min(menu.main.stateTime, 1.6), 1, math.floor(w / 2) + 1, 1.6)
         menu.quitX = ease.outQuint(math.min(menu.main.stateTime, 1.8), 1, math.floor(w / 2) + 1, 1.8)

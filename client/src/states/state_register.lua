@@ -94,7 +94,7 @@ function register.draw()
     buffer.setCursorPos(1, 2)
     buffer.write((" "):rep(w))
     buffer.setCursorPos(2, 2)
-    buffer.write("\171 Register for jamMUD")
+    buffer.write("\171 Register for jamROGUE")
     buffer.setBackgroundColour(colours.black)
 
     buffer.setCursorPos(4, 6)
@@ -259,7 +259,7 @@ function register.register()
     register.errorText = ""
     register.successText = ""
 
-    if #register.username < 3 or #register.username > 15 or not register.username:find("^[a-z0-9_]+$") then
+    if #register.username < 3 or #register.username > 15 or not register.username:lower():find("^[a-z0-9_]+$") then
         register.flashUsername = true
         register.errorText = "Invalid username"
 

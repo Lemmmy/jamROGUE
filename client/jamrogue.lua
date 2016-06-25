@@ -49,4 +49,7 @@ if not framebuffer then
     os.loadAPI(resolveFile("lib/framebuffer"))
 end
 
+local a = blittle.shrink(paintutils.loadImage(resolveFile("assets/logo")))
+blittle.save(a, "assets/logo_little")
+
 local main = require("src/main.lua")

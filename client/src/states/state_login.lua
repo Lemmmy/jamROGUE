@@ -69,7 +69,7 @@ function login.draw()
     buffer.setCursorPos(1, 2)
     buffer.write((" "):rep(w))
     buffer.setCursorPos(2, 2)
-    buffer.write("\171 Log in to jamMUD")
+    buffer.write("\171 Log in to jamROGUE")
     buffer.setBackgroundColour(colours.black)
 
     buffer.setCursorPos(4, 6)
@@ -199,7 +199,7 @@ end
 function login.login()
     login.errorText = ""
 
-    if #login.username < 3 or #login.username > 15 or not login.username:find("^[a-z0-9_]+$") then
+    if #login.username < 3 or #login.username > 15 or not login.username:lower():find("^[a-z0-9_]+$") then
         login.flashUsername = true
         login.errorText = "Invalid username"
 

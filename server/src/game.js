@@ -1,17 +1,35 @@
 import DB from "./db";
 import Player from "./player";
+import DungeonGenerator from "./dungeon";
 
 import hat from "hat";
 import bcrypt from "bcrypt-nodejs";
 
+import _ from "lodash";
+
 let Game = {
 	lastPollID: 0,
+	rooms: [],
+	spawnRoom: 0,
+	dungeonID: hat(36),
 
 	init() {
 		return new Promise(resolve => {
 			Game.players = [];
 
-			resolve();
+			DungeonGenerator.generate().then(rooms => {
+				Game.rooms = rooms;
+
+				let bigRooms = Game.rooms.filter(r => { return r.type === "hub" });
+				let spawnRoom = _.sample(bigRooms);
+
+				Game.spawnRoom = spawnRoom.id;
+				Game.rooms[spawnRoom.id].spawn = true;
+				Game.rooms[spawnRoom.id].spawnX = _.random(3, spawnRoom.width - 3);
+				Game.rooms[spawnRoom.id].spawnY = _.random(3, spawnRoom.height - 3);
+
+				resolve();
+			});
 		});
 	},
 
@@ -23,7 +41,9 @@ let Game = {
 				}
 			}
 
-			DB.r.table("users").filter({ name: username }).limit(1).run().then(results => {
+			DB.r.table("users").filter(user => {
+				return user("name").match(`(?i)^${username}$`);
+			}).limit(1).run().then(results => {
 				if (results.length !== 1) {
 					return reject("incorrect_login");
 				}

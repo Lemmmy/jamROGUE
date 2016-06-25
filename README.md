@@ -1,5 +1,5 @@
-# jamMUD
-My entry for CCJam 2016. It is a multiplayer dungeon game in CC.
+# jamROGUE
+My entry for CCJam 2016. It is a multiplayer roguelike.
 
 ## Client
 Client is super cool and not poopy but the code is poopy
