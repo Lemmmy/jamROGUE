@@ -17,17 +17,33 @@ export default app => {
 			});
 		}
 
-		DB.r.table("users").insert({ name: req.params.name, password: bcrypt.hashSync(req.body.password) }).run().then(() => {
-			res.json({
-				ok: true
-			});
-		}).catch(error => {
+		let serverError = error => {
 			console.error(error);
 
 			res.json({
 				ok: false,
 				error: "server_error"
 			});
-		});
+		};
+
+		DB.r.table("users").filter(user => {
+			return user("name").match(`(?i)^${req.params.name}$`)
+		}).count().run().then(count => {
+			if (count > 0) {
+				return res.json({
+					ok: false,
+					error: "name_taken"
+				});
+			}
+
+			DB.r.table("users").insert({
+				name: req.params.name,
+				password: bcrypt.hashSync(req.body.password)
+			}).run().then(() => {
+				res.json({
+					ok: true
+				});
+			}).catch(serverError);
+		}).catch(serverError);
 	});
 };

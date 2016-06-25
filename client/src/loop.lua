@@ -1,13 +1,13 @@
 local buffer = require("src/buffer.lua")
 
 return function(main)
-    local timerp = os.startTimer(1)
+    local timerp = os.startTimer(0.05)
 
     while true do
         local event, p1, p2, p3 = os.pullEvent()
 
         if event == "timer" and p1 == timerp then
-            main.stateTime = main.stateTime + 0.1
+            main.stateTime = main.stateTime + 0.05
 
             if main.states[main.state] then
                 if main.states[main.state].draw then
@@ -16,10 +16,10 @@ return function(main)
                     main.states[main.state].draw()
                 end
 
-                buffer.redraw()
+                framebuffer.draw(buffer.buffer)
             end
 
-            timerp = os.startTimer(0.1)
+            timerp = os.startTimer(0.05)
         elseif event == "key_up" then
             if main.states[main.state] then
                 if main.states[main.state].keyUp then

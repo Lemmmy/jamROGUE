@@ -9,7 +9,9 @@ export default app => {
 			});
 		}
 
-		DB.r.table("users").filter({ name: req.params.name }).count().run().then(count => {
+		DB.r.table("users").filter(user => {
+			return user("name").match(`(?i)^${req.params.name}$`);
+		}).count().run().then(count => {
 			res.json({
 				ok: true,
 				available: count === 0

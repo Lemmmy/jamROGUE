@@ -41,7 +41,7 @@ function menu.draw()
     if menu.main.stateTime <= 2.2 then
         menu.logoX = ease.inOutCubic(math.min(menu.main.stateTime, 1.8), 1, math.floor((w - menu.logo.width) / 2) + 1, 1.8)
         menu.loginX = ease.inOutCubic(math.min(menu.main.stateTime, 2), 1, math.floor(w / 2) + 1, 2)
-        menu.registerX = ease.inOutCubic(math.min(menu.main.stateTime, 2.2), 1, math.floor(w / 2) + 2, 2.2)
+        menu.registerX = ease.inOutCubic(math.min(menu.main.stateTime, 2.2), 1, math.floor(w / 2) + 1, 2.2)
     end
 
     blittle.draw(menu.logo, math.floor(menu.logoX), 4, buffer)

@@ -45,4 +45,8 @@ if not blittle then
     os.loadAPI(resolveFile("lib/blittle"))
 end
 
+if not framebuffer then
+    os.loadAPI(resolveFile("lib/framebuffer"))
+end
+
 local main = require("src/main.lua")

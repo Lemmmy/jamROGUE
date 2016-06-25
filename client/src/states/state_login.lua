@@ -1,4 +1,5 @@
 local buffer = require("src/buffer.lua")
+local constants = require("src/constants.lua")
 
 local w, h = term.getSize()
 
@@ -14,7 +15,46 @@ function login.init(main)
     login.errorText = ""
     login.checkingText = ""
     login.checkingColour = colours.grey
-    login.latestCheckURL = ""
+    login.latestLoginURL = ""
+end
+
+function login.httpSuccess(url, response)
+    if url == login.latestLoginURL then
+        local resp = json.decode(response.readAll())
+
+        if resp.ok then
+            login.main.connection = {
+                name = resp.name,
+                token = resp.token
+            }
+
+            login.main.changeState("connecting")
+        else
+            if resp.error == "invalid_username" then
+                login.flashUsername = true
+                login.errorText = "Invalid username"
+            elseif resp.error == "missing_password" then
+                login.flashPassword = true
+                login.errorText = "Missing password"
+            elseif resp.error == "server_error" then
+                login.errorText = "Server error"
+            elseif resp.error == "already_logged_in" then
+                login.errorText = "Already logged in"
+            elseif resp.error == "incorrect_login" then
+                login.flashUsername = true
+                login.flashPassword = true
+                login.errorText = "Incorrect login details"
+            else
+                login.checkingText = resp.error
+            end
+        end
+    end
+end
+
+function login.httpFailure(url)
+    if url == login.latestLoginURL then
+        login.errorText = "Failed to connect to the server"
+    end
 end
 
 function login.draw()
@@ -162,12 +202,22 @@ function login.login()
     if #login.username < 3 or #login.username > 15 or not login.username:find("^[a-z0-9_]+$") then
         login.flashUsername = true
         login.errorText = "Invalid username"
+        
+        return
     end
 
     if #login.password <= 0 then
         login.flashPassword = true
         login.errorText = "Missing password"
+
+        return
     end
+
+    local url = constants.server .. "connect"
+
+    login.latestLoginURL = url
+
+    http.request(url, "name=" .. textutils.urlEncode(login.username):gsub("+", "%%20") .. "&password=" .. textutils.urlEncode(login.password):gsub("+", "%%20"))
 end
 
 return login

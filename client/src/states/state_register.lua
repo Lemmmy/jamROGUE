@@ -13,9 +13,11 @@ function register.init(main)
     register.flashPassword = false
     register.focusedItem = 0
     register.errorText = ""
+    register.successText = ""
     register.checkingText = ""
     register.checkingColour = colours.grey
     register.latestCheckURL = ""
+    register.latestRegisterURL = ""
 end
 
 function register.usernameUpdated()
@@ -47,6 +49,36 @@ function register.httpSuccess(url, response)
                 register.checkingText = resp.error
             end
         end
+    elseif url == register.latestRegisterURL then
+        local resp = json.decode(response.readAll())
+
+        if resp.ok then
+            register.successText = "Account created successfully"
+        else
+            if resp.error == "invalid_username" then
+                register.flashUsername = true
+                register.errorText = "Invalid username"
+            elseif resp.error == "missing_password" then
+                register.flashPassword = true
+                register.errorText = "Missing password"
+            elseif resp.error == "name_taken" then
+                register.flashUsername = true
+                register.errorText = "Name already taken"
+            elseif resp.error == "server_error" then
+                register.errorText = "Server error"
+            else
+                register.checkingText = resp.error
+            end
+        end
+    end
+end
+
+function register.httpFailure(url)
+    if url == register.latestCheckURL then
+        register.checkingColour = colours.red
+        register.checkingText = "Failed to connect to the server"
+    elseif url == register.latestRegisterURL then
+        register.errorText = "Failed to connect to the server"
     end
 end
 
@@ -108,19 +140,40 @@ function register.draw()
         buffer.setTextColour(colours.white)
     end
 
-    buffer.setCursorPos(w - (#"Register" + 7), h - 2)
-    buffer.setBackgroundColour(colours.green)
-    buffer.write((" "):rep(2) .. "Register" .. (" "):rep(2))
-    buffer.setBackgroundColour(colours.black)
-    buffer.setTextColour(colours.green)
-    buffer.setCursorPos(w - (#"Register" + 7), h - 1)
-    buffer.write(("\131"):rep(#"Register" + 4))
-    buffer.setBackgroundColour(colours.green)
-    buffer.setTextColour(colours.black)
-    buffer.setCursorPos(w - (#"Register" + 7), h - 3)
-    buffer.write(("\143"):rep(#"Register" + 4))
-    buffer.setBackgroundColour(colours.black)
-    buffer.setTextColour(colours.white)
+    if #register.successText > 0 then
+        buffer.setCursorPos(4, 14)
+        buffer.setTextColour(colours.green)
+        buffer.write(register.successText)
+        buffer.setTextColour(colours.white)
+        
+        buffer.setCursorPos(w - (#"Back to menu" + 7), h - 2)
+        buffer.setBackgroundColour(colours.green)
+        buffer.write((" "):rep(2) .. "Back to menu" .. (" "):rep(2))
+        buffer.setBackgroundColour(colours.black)
+        buffer.setTextColour(colours.green)
+        buffer.setCursorPos(w - (#"Back to menu" + 7), h - 1)
+        buffer.write(("\131"):rep(#"Back to menu" + 4))
+        buffer.setBackgroundColour(colours.green)
+        buffer.setTextColour(colours.black)
+        buffer.setCursorPos(w - (#"Back to menu" + 7), h - 3)
+        buffer.write(("\143"):rep(#"Back to menu" + 4))
+        buffer.setBackgroundColour(colours.black)
+        buffer.setTextColour(colours.white)
+    else
+        buffer.setCursorPos(w - (#"Register" + 7), h - 2)
+        buffer.setBackgroundColour(colours.green)
+        buffer.write((" "):rep(2) .. "Register" .. (" "):rep(2))
+        buffer.setBackgroundColour(colours.black)
+        buffer.setTextColour(colours.green)
+        buffer.setCursorPos(w - (#"Register" + 7), h - 1)
+        buffer.write(("\131"):rep(#"Register" + 4))
+        buffer.setBackgroundColour(colours.green)
+        buffer.setTextColour(colours.black)
+        buffer.setCursorPos(w - (#"Register" + 7), h - 3)
+        buffer.write(("\143"):rep(#"Register" + 4))
+        buffer.setBackgroundColour(colours.black)
+        buffer.setTextColour(colours.white)
+    end
 end
 
 function register.keyUp(key, keycode)
@@ -129,7 +182,11 @@ function register.keyUp(key, keycode)
     elseif key == "up" then
         register.focusedItem = (register.focusedItem - 1) % 2
     elseif key == "enter" then
-        register.register()
+        if #register.successText <= 0 then
+            register.register()
+        else
+            register.main.changeState("menu")
+        end
     end
 end
 
@@ -160,8 +217,10 @@ function register.mouseClick(button, x, y)
             register.focusedItem = 0
         elseif x >= 4 and x <= w - 4 and y == 11 then
             register.focusedItem = 1
-        elseif x >= w - (#"Register" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
+        elseif #register.successText <= 0 and x >= w - (#"Register" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
             register.register()
+        elseif #register.successText > 0 and x >= w - (#"Back to menu" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
+            register.main.changeState("menu")
         end
     end
 end
@@ -198,16 +257,27 @@ end
 
 function register.register()
     register.errorText = ""
+    register.successText = ""
 
     if #register.username < 3 or #register.username > 15 or not register.username:find("^[a-z0-9_]+$") then
         register.flashUsername = true
         register.errorText = "Invalid username"
+
+        return
     end
 
     if #register.password <= 0 then
         register.flashPassword = true
         register.errorText = "Missing password"
+
+        return
     end
+
+    local url = constants.server .. "register/" .. textutils.urlEncode(register.username)
+
+    register.latestRegisterURL = url
+
+    http.request(url, "password=" .. textutils.urlEncode(register.password):gsub("+", "%%20"))
 end
 
 return register

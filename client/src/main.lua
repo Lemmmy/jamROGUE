@@ -5,6 +5,7 @@ main.states = {
     menu = require("src/states/state_menu.lua"),
     login = require("src/states/state_login.lua"),
     register = require("src/states/state_register.lua"),
+    connecting = require("src/states/state_connecting.lua")
 }
 
 main.state = "menu"
@@ -14,8 +15,10 @@ function main.changeState(dest)
     main.state = dest
     main.stateTime = 1
 
-    if main.states[main.state].init then
-        main.states[main.state].init(main)
+    if main.states[main.state] then
+        if main.states[main.state].init then
+            main.states[main.state].init(main)
+        end
     end
 end
 

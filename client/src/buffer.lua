@@ -1,6 +1,4 @@
 local w, h = term.getSize()
-local buffer = window.create(term.current(), 1, 1, w, h)
-
-buffer.setVisible(true)
+local buffer = framebuffer.new(w, h, true, 0, 0)
 
 return buffer

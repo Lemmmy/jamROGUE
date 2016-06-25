@@ -13,16 +13,17 @@ let Server = {
 			app.disable("x-powered-by");
 			app.disable("etag");
 
-			app.use(bodyParser.urlencoded({ extended: false }));
-			app.use(bodyParser.json());
-
 			app.all("*", (req, res, next) => {
+				delete req.headers["content-encoding"]
 				res.header("X-Robots-Tag", "none");
 				res.header("Content-Type", "application/json");
 				res.header("Access-Control-Allow-Origin", "*");
 
 				next();
 			});
+
+			app.use(bodyParser.urlencoded({ extended: false }));
+			app.use(bodyParser.json());
 
 			console.log("[Webserver] Loading routes");
 
