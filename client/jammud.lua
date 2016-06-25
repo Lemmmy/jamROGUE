@@ -27,7 +27,7 @@ function require(file)
         setmetatable(env, { __index = _G })
 
         local chunk, err = loadfile(file, env)
-        
+
         if chunk == nil then
             return error(err or "N/A", 0)
         end

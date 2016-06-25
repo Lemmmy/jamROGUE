@@ -9,7 +9,6 @@ class Player {
 		this.token = token;
 
 		this.buffer = [];
-		this.pending = [];
 
 		this.connected = false;
 		this.disconnectedTime = new Date();
@@ -34,79 +33,45 @@ class Player {
 	}
 
 	addEvent(type, data) {
-		buffer.push({
+		this.buffer.push({
 			type: type,
 			data: data,
 			time: new Date()
 		});
 	}
 
-	nextEvent(time = 0) {
-		let event;
-		let minTime = new Date() - 60000;
-
-		for (var i = 0; i < this.buffer.length; i++) {
-			event = this.buffer[i];
-
-			if (event.time < minTime) {
-				this.buffer[i] = null;
-				continue;
-			}
-
-			if (event.time > time) {
-				break;
-			}
-		}
-
-		this.buffer = _.compact(this.buffer);
-
-		return event;
+	getEvents() {
+		let buffer = this.buffer;
+		this.buffer = [];
+		return buffer;
 	}
 
 	notify() {
-		for (var i = 0; i < this.pending.length; i++) {
-			let ctx = this.pending[i];
+		if (this.req && this.res) {
+			this.req.resume();
+			this.res.json({
+				ok: true,
+				events: this.getEvents()
+			});
 
-			if (!ctx.req) {
-				this.pending[i] = null;
-				continue;
-			}
+			this.req = null;
+			this.res = null;
 
-			let event = this.nextEvent(ctx.time);
-
-			if (event) {
-				ctx.req.resume();
-				ctx.res.json({
-					ok: true,
-					event: event
-				});
-
-				self.connected = false;
-				self.disconnectedTime = new Date();
-
-				this.pending[i] = null;
-			}
+			this.connected = false;
+			this.disconnectedTime = new Date();
 		}
-
-		this.pending = _.compact(this.pending);
 	}
 
-	pause(time, req, res, pollID) {
-		let ctx = {
-			id: pollID,
-			time: time,
-			req: req,
-			res: res
-		};
-
-		this.pending.push(ctx);
+	pause(req, res) {
+		this.req = req;
+		this.res = res;
 
 		let self = this;
 
-		req.connection.setTimeout(60000);
+		req.connection.setTimeout(20000);
 		req.connection.on("timeout", () => {
-			ctx.req = null;
-			ctx.res = null;
+			self.req = null;
+			self.res = null;
 
 			self.connected = false;
 			self.disconnectedTime = new Date();

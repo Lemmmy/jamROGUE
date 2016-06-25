@@ -28,7 +28,7 @@ function login.httpSuccess(url, response)
                 token = resp.token
             }
 
-            login.main.changeState("connecting")
+            login.main.changeState("game")
         else
             if resp.error == "invalid_username" then
                 login.flashUsername = true
@@ -202,7 +202,7 @@ function login.login()
     if #login.username < 3 or #login.username > 15 or not login.username:find("^[a-z0-9_]+$") then
         login.flashUsername = true
         login.errorText = "Invalid username"
-        
+
         return
     end
 

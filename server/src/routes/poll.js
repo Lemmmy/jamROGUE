@@ -19,16 +19,14 @@ export default app => {
 			});
 		}
 
-		let time = req.query.time || 0;
-		let event = player.nextEvent(time);
-		let pollID = Game.lastPollID++;
+		let events = player.getEvents();
 
-		if (!event) {
-			player.pause(time, req, res, pollID);
+		if (!events || (events && events.length === 0)) {
+			player.pause(req, res);
 		} else {
 			res.json({
 				ok: true,
-				event: event
+				events: events
 			});
 			res.end();
 

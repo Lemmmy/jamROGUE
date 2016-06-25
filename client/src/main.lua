@@ -5,7 +5,7 @@ main.states = {
     menu = require("src/states/state_menu.lua"),
     login = require("src/states/state_login.lua"),
     register = require("src/states/state_register.lua"),
-    connecting = require("src/states/state_connecting.lua")
+    game = require("src/states/state_game.lua")
 }
 
 main.state = "menu"

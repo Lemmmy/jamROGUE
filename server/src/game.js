@@ -39,6 +39,8 @@ let Game = {
 
 				Game.players.push(player);
 
+				Game.broadcast("online_users", Game.players.length);
+
 				resolve(player);
 			});
 		});
@@ -52,6 +54,13 @@ let Game = {
 		}
 
 		return null;
+	},
+
+	broadcast(type, data) {
+		Game.players.forEach(player => {
+			player.addEvent(type, data);
+			player.notify()
+		});
 	}
 };
 

@@ -36,10 +36,10 @@ function register.httpSuccess(url, response)
         local resp = json.decode(response.readAll())
 
         register.checkingColour = resp.ok and resp.available and colours.green or colours.red or colours.red
-        
+
         if resp.ok then
             register.checkingText = resp.available and "Available!" or "Name already taken"
-        else 
+        else
             if resp.error == "invalid_username" then
                 register.flashUsername = true
                 register.checkingText = "Invalid username"
@@ -145,7 +145,7 @@ function register.draw()
         buffer.setTextColour(colours.green)
         buffer.write(register.successText)
         buffer.setTextColour(colours.white)
-        
+
         buffer.setCursorPos(w - (#"Back to menu" + 7), h - 2)
         buffer.setBackgroundColour(colours.green)
         buffer.write((" "):rep(2) .. "Back to menu" .. (" "):rep(2))
