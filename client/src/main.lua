@@ -11,11 +11,13 @@ main.states = {
 }
 
 main.state = "menu"
+main.stateStartTime = os.clock()
 main.stateTime = 1
 
 function main.changeState(dest)
     main.state = dest
-    main.stateTime = 1
+    main.stateStartTime = os.clock()
+    main.stateTime = os.clock() - main.stateStartTime
 
     if main.states[main.state] then
         if main.states[main.state].init then
@@ -24,7 +26,7 @@ function main.changeState(dest)
     end
 end
 
-main.changeState("menu")
+main.changeState("login")
 
 require("src/loop.lua")(main)
 

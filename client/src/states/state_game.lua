@@ -22,6 +22,9 @@ function game.init(main)
 
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
+
+    -- testing
+    game.main.connection.roomName = "Test Room"
 end
 
 function game.httpSuccess(url, response)
@@ -43,7 +46,6 @@ end
 
 function game.httpFailure(url)
     if url == constants.server .. "game/poll" then
-        gamePrint("Cool")
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
@@ -51,6 +53,7 @@ end
 
 function game.draw()
     game.drawHUD()
+    game.drawGame()
 end
 
 function game.drawHUD()
@@ -119,7 +122,6 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
-
 end
 
 function game.drawSidebarMenu()
@@ -133,6 +135,49 @@ function game.drawSidebarMenu()
     buffer.setTextColour(colours.red)
     buffer.setCursorPos(w, h - 1)
     buffer.write("\149")
+    buffer.setTextColour(colours.white)
+end
+
+function game.drawGame()
+    game.drawWindowBorder()
+    game.drawRoom()
+end
+
+function game.drawWindowBorder()
+    buffer.setCursorPos(1, 1)
+    buffer.write("\7")
+    buffer.write(("\45"):rep(w - 22))
+    buffer.write("\7")
+    buffer.setCursorPos(1, h - 4)
+    buffer.write("\7")
+    buffer.write(("\45"):rep(w - 22))
+    buffer.write("\7")
+
+    for i = 2, h - 5 do
+        buffer.setCursorPos(1, i)
+        buffer.write("\124")
+        buffer.setCursorPos(w - 20, i)
+        buffer.write("\124")
+    end
+
+    local room = (game.main.connection.roomName or "Unknown Room")
+    local a = "[ " .. (" "):rep(#room) .. " ]"
+    buffer.setCursorPos(((w - 17) - #a) / 2 + 1, 1)
+    buffer.write(a)
+
+    buffer.setTextColour(colours.lightBlue)
+    buffer.setCursorPos(((w - 17) - #a) / 2 + 3, 1)
+    buffer.write(room)
+
+    buffer.setTextColour(colours.white)
+end
+
+function game.drawRoom()
+    buffer.setTextColour(colours.grey)
+    for y = 2, h - 5 do
+        buffer.setCursorPos(2, y)
+        buffer.write(("\183"):rep(w - 22))
+    end
     buffer.setTextColour(colours.white)
 end
 
@@ -186,14 +231,12 @@ end
 
 function game.update()
     if os.clock() - game.lastPollTime > 20.25 then
-        gamePrint("Timeout")
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
 end
 
 function game.updateOnlineUsers(data)
-    gamePrint("Online users: " .. data)
     game.onlineUsers = data
 end
 

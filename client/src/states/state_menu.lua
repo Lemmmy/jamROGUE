@@ -17,7 +17,7 @@ end
 
 function menu.draw()
     local function menuItem(n, text, x, y)
-         if menu.selectedItem == n and menu.main.stateTime > 1.8 then
+         if menu.selectedItem == n and menu.main.stateTime > 1 then
             buffer.setBackgroundColour(colours.grey)
             buffer.setCursorPos(w / 2 - 4, y)
             buffer.write((" "):rep(12))
@@ -46,11 +46,11 @@ function menu.draw()
         buffer.write(text)
     end
 
-    if menu.main.stateTime <= 2.4 then
-        menu.logoX = ease.inOutCubic(math.min(menu.main.stateTime, 1.8), 1, math.floor((w - menu.logo.width) / 2) + 1, 1.8)
-        menu.loginX = ease.inOutCubic(math.min(menu.main.stateTime, 2), 1, math.floor(w / 2) + 1, 2)
-        menu.registerX = ease.inOutCubic(math.min(menu.main.stateTime, 2.2), 1, math.floor(w / 2) + 1, 2.2)
-        menu.quitX = ease.inOutCubic(math.min(menu.main.stateTime, 2.4), 1, math.floor(w / 2) + 1, 2.4)
+    if menu.main.stateTime <= 2 then
+        menu.logoX = ease.outQuint(math.min(menu.main.stateTime, 1.2), 1, math.floor((w - menu.logo.width) / 2) + 1, 1.2)
+        menu.loginX = ease.outQuint(math.min(menu.main.stateTime, 1.4), 1, math.floor(w / 2) + 1, 1.4)
+        menu.registerX = ease.outQuint(math.min(menu.main.stateTime, 1.6), 1, math.floor(w / 2) + 1, 1.6)
+        menu.quitX = ease.outQuint(math.min(menu.main.stateTime, 1.8), 1, math.floor(w / 2) + 1, 1.8)
     end
 
     blittle.draw(menu.logo, math.floor(menu.logoX), 4, buffer)

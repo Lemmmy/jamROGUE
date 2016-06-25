@@ -7,7 +7,7 @@ return function(main)
         local event, p1, p2, p3 = os.pullEvent()
 
         if event == "timer" and p1 == timerp then
-            main.stateTime = main.stateTime + 0.05
+            main.stateTime = os.clock() - main.stateStartTime
 
             if main.states[main.state] then
                 if main.states[main.state].draw then

@@ -1,22 +1,9 @@
-local pow = math.pow
-local sin = math.sin
-local cos = math.cos
-local pi = math.pi
-local sqrt = math.sqrt
-local abs = math.abs
-local asin  = math.asin
+local pow, sin, cos, pi, sqrt, abs, asin = math.pow, math.sin, math.cos, math.pi, math.sqrt, math.abs, math.asin
 
-local function inOutCubic(t, b, c, d)
-    t = t / d * 2
-
-    if t < 1 then
-        return c / 2 * t * t * t + b
-    else
-    	t = t - 2
-        return c / 2 * (t * t * t + 2) + b
-    end
+local function outQuint(t, b, c, d)
+    return c * (pow(t / d - 1, 5) + 1) + b
 end
 
 return {
-    inOutCubic = inOutCubic
+    outQuint = outQuint
 }
