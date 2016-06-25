@@ -1,5 +1,7 @@
 import config from "./config.json";
 
+require("console-stamp")(console);
+
 import DB from "./db";
 import Server from "./server";
 import Game from "./game";

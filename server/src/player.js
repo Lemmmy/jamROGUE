@@ -13,18 +13,29 @@ class Player {
 		this.connected = false;
 		this.disconnectedTime = new Date();
 
+		this.deleted = false;
+
 		console.log(`Player ${this.name} connected`);
 
 		setTimeout(this.ping.bind(this), 1000);
 	}
 
 	disconnect(reason) {
+		this.deleted = true;
+
 		console.log(`Player ${this.name} disconnected for reason ${reason}`);
 
 		this.Game.players.splice(this.Game.players.indexOf(this), 1);
+
+		this.Game.broadcast("player_quit", {
+			name: this.name
+		});
+		this.Game.broadcast("online_users", this.Game.players.length);
 	}
 
 	ping() {
+		if (this.deleted) return;
+
 		if (!this.connected && new Date().getTime() - this.disconnectedTime.getTime() > 10000) {
 			return this.disconnect("timeout");
 		}
@@ -70,6 +81,7 @@ class Player {
 
 		req.connection.setTimeout(20000);
 		req.connection.on("timeout", () => {
+			console.log(`Req timeout from ${self.name}`)
 			self.req = null;
 			self.res = null;
 

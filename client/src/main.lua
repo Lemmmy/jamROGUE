@@ -1,6 +1,8 @@
 local main = {}
 local buffer = require("src/buffer.lua")
 
+main.exiting = false
+
 main.states = {
     menu = require("src/states/state_menu.lua"),
     login = require("src/states/state_login.lua"),
