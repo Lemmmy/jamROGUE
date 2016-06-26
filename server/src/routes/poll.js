@@ -19,7 +19,7 @@ export default app => {
 			});
 		}
 
-		let events = player.getEvents();    
+		let events = player.getEvents();
 
 		if (!events || (events && events.length === 0)) {
 			player.pause(req, res);

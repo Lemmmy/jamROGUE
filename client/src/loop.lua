@@ -10,6 +10,10 @@ return function(main)
             main.stateTime = os.clock() - main.stateStartTime
 
             if main.states[main.state] then
+                if main.states[main.state].update then
+                    main.states[main.state].update()
+                end
+
                 if main.states[main.state].draw then
                     buffer.clear()
 

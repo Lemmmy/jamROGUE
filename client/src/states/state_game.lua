@@ -129,6 +129,10 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
+    buffer.setCursorPos(w - 19, 4)
+    buffer.write(os.clock())
+    buffer.setCursorPos(w - 19, 5)
+    buffer.write(game.lastPollTime)
 end
 
 function game.drawSidebarMenu()
@@ -321,8 +325,7 @@ function game.key(key)
 end
 
 function game.update()
-    if os.clock() - game.lastPollTime > 20.25 then
-        gamePrint("Yes Epic")
+    if os.clock() - game.lastPollTime > 20.5 then
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
