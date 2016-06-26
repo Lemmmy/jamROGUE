@@ -20,6 +20,8 @@ function game.init(main)
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     http.request(constants.server .. "map.json")
+
+    game.main.connection.players = {}
 end
 
 function game.print(text)
@@ -208,7 +210,6 @@ function game.drawRooms()
     else
         if game.main.connection.player then
             for _, room in ipairs(game.rooms) do
-                game.print(game.worldLeft .. " " .. game.worldRight .. " " .. game.worldTop .. " " .. game.worldBottom)
                 if  game.worldLeft    <= room.x + room.width and
                     game.worldRight	  >= room.x and
                     game.worldTop     <= room.y + room.height and
@@ -218,8 +219,10 @@ function game.drawRooms()
                     buffer.setBackgroundColour(room.type == "hub" and colours.red or room.type == "hall" and colours.orange or colours.blue)
                     for x = 1, room.width do
                         for y = 1, room.height do
-                            buffer.setCursorPos(roomX + x, roomY + y)
-                            buffer.write(" ");
+                            if roomX + x > 1 and roomY + y > 2 and roomX + x < game.viewportWidth + 3 and roomY + y < game.viewportHeight + 2 then
+                                buffer.setCursorPos(roomX + x, roomY + y)
+                                buffer.write(" ");
+                            end
                         end
                     end
                     buffer.setCursorPos(roomX, roomY)
@@ -234,6 +237,16 @@ function game.drawRooms()
 end
 
 function game.drawEntities()
+    buffer.setTextColour(colours.lightGrey)
+    for _, player in ipairs(game.main.connection.players) do
+        local playerX, playerY = worldToViewportPos(player.x, player.y)
+        if playerX > 1 and playerY > 2 and playerX < game.viewportWidth + 3 and playerY < game.viewportHeight + 2 then
+            buffer.setCursorPos(playerX, playerY)
+            buffer.write("\2")
+        end -- my life
+    end
+
+    buffer.setTextColour(colours.white)
     if game.main.connection.player then
         local playerX, playerY = worldToViewportPos(game.main.connection.player.x, game.main.connection.player.y)
         buffer.setCursorPos(playerX, playerY)
@@ -293,21 +306,32 @@ function game.key(key)
     if game.main.connection.player then
         if key == "left" then
             game.main.connection.player.x = game.main.connection.player.x - 1
+            game.playerMoved()
         elseif key == "right" then
             game.main.connection.player.x = game.main.connection.player.x + 1
+            game.playerMoved()
         elseif key == "up" then
             game.main.connection.player.y = game.main.connection.player.y - 1
+            game.playerMoved()
         elseif key == "down" then
             game.main.connection.player.y = game.main.connection.player.y + 1
+            game.playerMoved()
         end
     end
 end
 
 function game.update()
     if os.clock() - game.lastPollTime > 20.25 then
+        gamePrint("Yes Epic")
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
+end
+
+function game.playerMoved()
+    http.request(constants.server .. "game/move",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
+                                                    "&x=" .. game.main.connection.player.x ..
+                                                    "&y=" .. game.main.connection.player.y)
 end
 
 function game.updateOnlineUsers(data)
@@ -316,6 +340,18 @@ end
 
 function game.spawn(data)
     game.main.connection.player = Player(data.roomID, data.x, data.y, data.name)
+
+    for _, player in ipairs(data.players) do
+        if player.name:lower() ~= data.name:lower() then
+            table.insert(game.main.connection.players, Player(player.roomID, player.x, player.y, player.name))
+        end
+    end
+
+    game.print("Spawned " .. data.name .. " at " .. data.x .. ", " .. data.y)
+end
+
+function game.join(data)
+    table.insert(game.main.connection.players, Player(data.roomID, data.x, data.y, data.name))
     game.print("Spawned " .. data.name .. " at " .. data.x .. ", " .. data.y)
 end
 
@@ -325,10 +361,22 @@ function game.room(data)
     game.print(data.name)
 end
 
+function game.move(data)
+    for _, player in ipairs(game.main.connection.players) do
+        if player.name:lower() == data.player:lower() then
+            player.x = data.x
+            player.y = data.y
+            player.room = data.room
+        end
+    end
+end
+
 game.events = {
     online_users = game.updateOnlineUsers,
     spawn = game.spawn,
-    room = game.room
+    room = game.room,
+    join = game.join,
+    move = game.move
 }
 
 return game

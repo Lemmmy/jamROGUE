@@ -15,6 +15,10 @@ class Player {
 
 		this.deleted = false;
 
+		this.room = 0;
+		this.x = 0;
+		this.y = 0;
+
 		console.log(`Player ${this.name} connected`);
 
 		setTimeout(this.ping.bind(this), 1000);
@@ -64,6 +68,9 @@ class Player {
 				ok: true,
 				events: this.getEvents()
 			});
+			this.res.end();
+
+			this.req.connection.removeAllListeners();
 
 			this.req = null;
 			this.res = null;
@@ -92,6 +99,15 @@ class Player {
 		req.pause();
 
 		this.connected = true;
+	}
+
+	toJSON() {
+		return {
+			roomID: this.room,
+			x: this.x,
+			y: this.y,
+			name: this.name
+		};
 	}
 }
 

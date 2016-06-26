@@ -63,14 +63,10 @@ let Game = {
 				Game.players.push(player);
 
 				Game.broadcast("online_users", Game.players.length);
-				player.addEvent("spawn", {
-					dungeonID: Game.dungeonID,
-					roomID: player.room,
-					x: player.x,
-					y: player.y,
-					name: player.name
-				});
+				player.addEvent("spawn", _.merge({ dungeonID: Game.dungeonID, players: _.map(Game.players, p => { return p.toJSON(); }) }, player.toJSON()));
 				player.addEvent("room", Game.rooms[player.room]);
+
+				Game.broadcastToAllBut(player.name, "join", player.toJSON());
 
 				resolve(player);
 			});
@@ -89,6 +85,15 @@ let Game = {
 
 	broadcast(type, data) {
 		Game.players.forEach(player => {
+			player.addEvent(type, data);
+			player.notify()
+		});
+	},
+
+	broadcastToAllBut(but, type, data) {
+		Game.players.forEach(player => {
+			if (but.toLowerCase() === player.name.toLowerCase()) return;
+
 			player.addEvent(type, data);
 			player.notify()
 		});
