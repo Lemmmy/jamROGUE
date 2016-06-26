@@ -20,10 +20,14 @@ export default app => {
 				spawn: room.spawn,
 				spawnX: room.spawnX,
 				spawnY: room.spawnY,
-				type: room.type
+				type: room.type,
+				name: room.name
 			};
 		});
 
-		res.json(out);
+		res.json({
+			ok: true,
+			rooms: out
+		});
 	});
 };

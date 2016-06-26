@@ -1,13 +1,10 @@
 local buffer = require("src/buffer.lua")
 local constants = require("src/constants.lua")
+local Player = require("src/entities/entity_player.lua")
 
 local w, h = term.getSize()
 
 local game = {}
-
-local function gamePrint(text)
-    game.log[#game.log + 1] = text
-end
 
 function game.init(main)
     game.main = main
@@ -22,9 +19,15 @@ function game.init(main)
 
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
+    http.request(constants.server .. "map.json")
+end
 
-    -- testing
-    game.main.connection.roomName = "Test Room"
+function game.print(text)
+    game.log[#game.log + 1] = text
+
+    if #game.log > 4 then
+        table.remove(game.log, 1)
+    end
 end
 
 function game.httpSuccess(url, response)
@@ -41,6 +44,8 @@ function game.httpSuccess(url, response)
 
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
+    elseif url == constants.server .. "map.json" then
+        game.rooms = json.decode(response.readAll()).rooms
     end
 end
 
@@ -86,7 +91,7 @@ function game.drawSidebar()
     buffer.write(game.main.connection.name)
 
     local online = "Online: " .. game.onlineUsers
-    buffer.setCursorPos(w - 17 + ((17 - #online) / 2) + 1, 2)
+    buffer.setCursorPos(w - 17 + ((17 - #online) / 2), 2)
     buffer.write(online)
 
     if game.sidebarScreen == 0 then
@@ -138,9 +143,14 @@ function game.drawSidebarMenu()
     buffer.setTextColour(colours.white)
 end
 
+local function worldToViewportPos(x, y)
+    return x - game.viewportCenterX + 2 + game.viewportWidth / 2, y - game.viewportCenterY + 2 + game.viewportHeight / 2
+end
+
 function game.drawGame()
     game.drawWindowBorder()
-    game.drawRoom()
+    game.drawRooms()
+    game.drawEntities()
 end
 
 function game.drawWindowBorder()
@@ -160,25 +170,75 @@ function game.drawWindowBorder()
         buffer.write("\124")
     end
 
-    local room = (game.main.connection.roomName or "Unknown Room")
+    local room = (game.main.connection.room and game.main.connection.room.name or "Loading")
     local a = "[ " .. (" "):rep(#room) .. " ]"
-    buffer.setCursorPos(((w - 17) - #a) / 2 + 1, 1)
+    buffer.setCursorPos(((w - 17) - #a) / 2, 1)
     buffer.write(a)
 
     buffer.setTextColour(colours.lightBlue)
-    buffer.setCursorPos(((w - 17) - #a) / 2 + 3, 1)
+    buffer.setCursorPos(((w - 17) - #a) / 2 + 2, 1)
     buffer.write(room)
 
     buffer.setTextColour(colours.white)
 end
 
-function game.drawRoom()
+function game.drawRooms()
+    game.viewportWidth = w - 23
+    game.viewportHeight = h - 6
+
+    if game.main.connection.player then
+        game.viewportCenterX = game.main.connection.player.x
+        game.viewportCenterY = game.main.connection.player.y
+        game.worldLeft = game.viewportCenterX - (game.viewportWidth / 2)
+        game.worldRight = game.viewportCenterX + (game.viewportWidth / 2)
+        game.worldTop = game.viewportCenterY - (game.viewportHeight / 2)
+        game.worldBottom = game.viewportCenterY + (game.viewportHeight / 2)
+    end
+
     buffer.setTextColour(colours.grey)
     for y = 2, h - 5 do
         buffer.setCursorPos(2, y)
         buffer.write(("\183"):rep(w - 22))
     end
     buffer.setTextColour(colours.white)
+
+    if not game.rooms then
+        buffer.setCursorPos(((game.viewportWidth - #"Downloading map") / 2) + 4, game.viewportHeight / 2 + 2)
+        buffer.write("Downloading map")
+    else
+        if game.main.connection.player then
+            for _, room in ipairs(game.rooms) do
+                game.print(game.worldLeft .. " " .. game.worldRight .. " " .. game.worldTop .. " " .. game.worldBottom)
+                if  game.worldLeft    <= room.x + room.width and
+                    game.worldRight	  >= room.x and
+                    game.worldTop     <= room.y + room.height and
+                    game.worldBottom  >= room.y then
+                    local roomX, roomY = worldToViewportPos(room.x, room.y)
+
+                    buffer.setBackgroundColour(room.type == "hub" and colours.red or room.type == "hall" and colours.orange or colours.blue)
+                    for x = 1, room.width do
+                        for y = 1, room.height do
+                            buffer.setCursorPos(roomX + x, roomY + y)
+                            buffer.write(" ");
+                        end
+                    end
+                    buffer.setCursorPos(roomX, roomY)
+                    buffer.write(room.id)
+                    buffer.setBackgroundColour(colours.black)
+                end
+            end
+        end
+    end
+
+    buffer.setBackgroundColour(colours.black)
+end
+
+function game.drawEntities()
+    if game.main.connection.player then
+        local playerX, playerY = worldToViewportPos(game.main.connection.player.x, game.main.connection.player.y)
+        buffer.setCursorPos(playerX, playerY)
+        buffer.write("\2")
+    end
 end
 
 function game.drawLog()
@@ -229,6 +289,20 @@ function game.mouseClick(button, x, y)
     end
 end
 
+function game.key(key)
+    if game.main.connection.player then
+        if key == "left" then
+            game.main.connection.player.x = game.main.connection.player.x - 1
+        elseif key == "right" then
+            game.main.connection.player.x = game.main.connection.player.x + 1
+        elseif key == "up" then
+            game.main.connection.player.y = game.main.connection.player.y - 1
+        elseif key == "down" then
+            game.main.connection.player.y = game.main.connection.player.y + 1
+        end
+    end
+end
+
 function game.update()
     if os.clock() - game.lastPollTime > 20.25 then
         game.lastPollTime = os.clock()
@@ -240,8 +314,21 @@ function game.updateOnlineUsers(data)
     game.onlineUsers = data
 end
 
+function game.spawn(data)
+    game.main.connection.player = Player(data.roomID, data.x, data.y, data.name)
+    game.print("Spawned " .. data.name .. " at " .. data.x .. ", " .. data.y)
+end
+
+function game.room(data)
+    game.main.connection.room = data
+    game.print("Got room data")
+    game.print(data.name)
+end
+
 game.events = {
-    online_users = game.updateOnlineUsers
+    online_users = game.updateOnlineUsers,
+    spawn = game.spawn,
+    room = game.room
 }
 
 return game

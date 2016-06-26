@@ -56,10 +56,21 @@ let Game = {
 
 				let token = hat();
 				let player = new Player(Game, user.name, token);
+				player.room = Game.spawnRoom;
+				player.x = Game.rooms[Game.spawnRoom].x + Game.rooms[Game.spawnRoom].spawnX;
+				player.y = Game.rooms[Game.spawnRoom].y + Game.rooms[Game.spawnRoom].spawnY;
 
 				Game.players.push(player);
 
 				Game.broadcast("online_users", Game.players.length);
+				player.addEvent("spawn", {
+					dungeonID: Game.dungeonID,
+					roomID: player.room,
+					x: player.x,
+					y: player.y,
+					name: player.name
+				});
+				player.addEvent("room", Game.rooms[player.room]);
 
 				resolve(player);
 			});

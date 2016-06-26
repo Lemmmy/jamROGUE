@@ -108,7 +108,7 @@ class Room {
 	}
 }
 
-DungeonGenerator.generate = (level) => {
+DungeonGenerator.generate = () => {
 	return new Promise((resolve, reject) => {
 		var start = now();
 
@@ -285,8 +285,6 @@ DungeonGenerator.generate = (level) => {
 		}
 
 		{
-			let removeQueue = [];
-
 			rooms.forEach(room => {
 				let touched = false;
 
@@ -331,9 +329,24 @@ DungeonGenerator.generate = (level) => {
 
 		var end = now();
 
+		let outRooms = [];
+
 		rooms.forEach(room => {
 			if (!room.touched) return;
 
+			room.id = outRooms.length;
+			outRooms.push({
+				id: room.id,
+				x: room.x,
+				y: room.y,
+				width: room.width,
+				height: room.height,
+				type: room.type,
+				name: "Cool Room"
+			});
+		});
+
+		outRooms.forEach(room => {
 			let alpha = room.type === "hub" ? "88" : room.type === "hall" ? "33" : "aa";
 			g.fill((room.type === "hub" ? "#ff0000" : room.type === "hall" ? "#00ff00" : "#0000ff") + alpha);
 
@@ -345,14 +358,14 @@ DungeonGenerator.generate = (level) => {
 
 		g.stroke("transparent", 0).fill("white").font("Lato.ttf").fontSize(8);
 
-		rooms.forEach(room => {
+		outRooms.forEach(room => {
 			let x = (512 - (maxX + Math.abs(minX))) / 2 + room.x;
 			let y = (512 - (maxY + Math.abs(minY))) / 2 + room.y;
 
 			g.drawText(x + 2, y + 8, room.id);
 		});
 
-		g.fill("transparent").stroke("#00000088", 1);
+		/*g.fill("transparent").stroke("#00000088", 1);
 
 		rooms.filter(room => {
 			return room.type === "hub"
@@ -385,20 +398,11 @@ DungeonGenerator.generate = (level) => {
 			`Max X: ${maxX}\n` +
 			`Max Y: ${maxY}\n` +
 			`Shift iterations: ${iteration}\n` +
-			`Time taken: ${(end - start).toFixed(3)} ms`);
+			`Time taken: ${(end - start).toFixed(3)} ms`);*/
 
 		g.write("dungeon.png", err => {
 			if (err)
 				console.error(err);
-		});
-
-		let outRooms = [];
-
-		rooms.forEach(room => {
-			if (!room.touched) return;
-
-			room.id = outRooms.length;
-			outRooms.push(room);
 		});
 
 		resolve(outRooms);
