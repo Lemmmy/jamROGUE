@@ -529,19 +529,14 @@ function game.spawn(data)
             table.insert(game.main.connection.players, Player(player.roomID, player.x, player.y, player.name))
         end
     end
-
-    game.print("Spawned " .. data.name .. " at " .. data.x .. ", " .. data.y)
 end
 
 function game.join(data)
     table.insert(game.main.connection.players, Player(data.roomID, data.x, data.y, data.name))
-    game.print("Spawned " .. data.name .. " at " .. data.x .. ", " .. data.y)
 end
 
 function game.room(data)
     game.main.connection.room = data
-    game.print("Got room data")
-    game.print(data.name)
 end
 
 function game.move(data)
