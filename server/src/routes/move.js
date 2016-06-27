@@ -25,15 +25,7 @@ export default app => {
 			});
 		}
 
-		player.x = parseInt(req.body.x);
-		player.y = parseInt(req.body.y);
-
-		Game.broadcastToAllBut(player.name, "move", {
-			player: player.name,
-			x: player.x,
-			y: player.y,
-			room: player.room
-		});
+		player.move(parseInt(req.body.x), parseInt(req.body.y));
 
 		res.json({
 			ok: true

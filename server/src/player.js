@@ -2,11 +2,13 @@ import DB from "./db";
 import _ from "lodash";
 
 class Player {
-	constructor(game, name, token) {
+	constructor(game, name, token, id) {
 		this.Game = game;
 
 		this.name = name;
 		this.token = token;
+
+		this.id = id;
 
 		this.buffer = [];
 
@@ -108,6 +110,18 @@ class Player {
 			y: this.y,
 			name: this.name
 		};
+	}
+
+	move(x, y) {
+		this.x = x;
+		this.y = y;
+
+		Game.broadcastToAllBut(this.name, "move", {
+			player: this.name,
+			x: this.x,
+			y: this.y,
+			room: this.room
+		});
 	}
 }
 

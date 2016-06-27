@@ -55,7 +55,7 @@ let Game = {
 				}
 
 				let token = hat();
-				let player = new Player(Game, user.name, token);
+				let player = new Player(Game, user.name, token, user.id);
 				player.room = Game.spawnRoom;
 				player.x = Game.rooms[Game.spawnRoom].x + Game.rooms[Game.spawnRoom].spawnX;
 				player.y = Game.rooms[Game.spawnRoom].y + Game.rooms[Game.spawnRoom].spawnY;
@@ -63,10 +63,6 @@ let Game = {
 				Game.players.push(player);
 
 				Game.broadcast("online_users", Game.players.length);
-				player.addEvent("spawn", _.merge({ dungeonID: Game.dungeonID, players: _.map(Game.players, p => { return p.toJSON(); }) }, player.toJSON()));
-				player.addEvent("room", Game.rooms[player.room]);
-
-				Game.broadcastToAllBut(player.name, "join", player.toJSON());
 
 				resolve(player);
 			});

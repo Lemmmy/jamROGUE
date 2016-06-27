@@ -1,7 +1,5 @@
 if not term.isColour() then
-    print("Use an advanced computer")
-
-    exit()
+    error("Use an advanced computer")
 end
 
 local workingDir = fs.getDir(shell.getRunningProgram())

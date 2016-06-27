@@ -2,6 +2,7 @@ local buffer = require("src/buffer.lua")
 
 return function(main)
     local timerp = os.startTimer(0.05)
+    local timercent = os.startTimer(0.15)
 
     while not main.exiting do
         local event, p1, p2, p3 = os.pullEvent()
@@ -24,6 +25,14 @@ return function(main)
             end
 
             timerp = os.startTimer(0.05)
+        elseif event == "timer" and p1 == timercent then
+            if main.states[main.state] then
+                if main.states[main.state].updateCent then
+                    main.states[main.state].updateCent()
+                end
+            end
+
+            timercent = os.startTimer(0.1)
         elseif event == "key_up" then
             if main.states[main.state] and main.states[main.state].keyUp then
                 main.states[main.state].keyUp(keys.getName(p1), p1)

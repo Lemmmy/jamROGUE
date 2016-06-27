@@ -1,27 +1,30 @@
 import fs from "fs";
 import gm from "gm";
+import util from "util";
 import now from "performance-now";
 import _ from "lodash";
 
 let DungeonGenerator = {};
 
-let g = gm(512, 512, "white");
+let g = gm(768, 768, "white");
 
 let rooms = [];
 
 let tileSize = 4;
-let roomCount = 100;
-let coridoorCount = 10;
+let roomCount = 150;
 
 let minRoomWidth = 8;
-let maxRoomWidth = 38;
+let maxRoomWidth = 28;
 
 let minRoomHeight = 8;
-let maxRoomHeight = 30;
+let maxRoomHeight = 24;
 
-let hubRatio = 1.25;
+let hubRatio = 1.3;
 
 let padding = 1;
+
+let ellipseWidth = 150;
+let ellipseHeight = 30;
 
 function roundm(n, m) {
 	return Math.floor(((n + m - 1) / m)) * m;
@@ -103,9 +106,18 @@ class Room {
 	}
 
 	expand(by) {
-		this.width += by;
-		this.height += by;
+		this.x -= by;
+		this.y -= by;
+		this.width += by * 2;
+		this.height += by * 2;
 	}
+}
+
+function poop(a, b) {
+	return (a.x <= b.x + b.width &&
+			a.x + a.width >= b.x &&
+			a.y <= b.y + b.height &&
+			a.y + a.height >= b.y);
 }
 
 DungeonGenerator.generate = () => {
@@ -113,7 +125,7 @@ DungeonGenerator.generate = () => {
 		var start = now();
 
 		for (let i = 0; i < roomCount; i++) {
-			let point = getRandomPointInEllipse(100, 5);
+			let point = getRandomPointInEllipse(ellipseWidth, ellipseHeight);
 
 			let x = point[0];
 			let y = point[1];
@@ -264,19 +276,19 @@ DungeonGenerator.generate = () => {
 					dy = Math.floor(b.getCenterY() - y);
 
 					if (Math.random() >= 0.5) {
-						let room1 = new Room(rooms.length, x, y, dx + 2, 2);
+						let room1 = new Room(rooms.length, x, y, dx + 1, 1);
 						room1.type = "hall";
 						rooms.push(room1)
 
-						let room2 = new Room(rooms.length, x + dx, y, 2, dy);
+						let room2 = new Room(rooms.length, x + dx, y, 1, dy);
 						room2.type = "hall";
 						rooms.push(room2);
 					} else {
-						let room1 = new Room(rooms.length, x, y + dy, dx + 2, 2);
+						let room1 = new Room(rooms.length, x, y + dy, dx + 1, 1);
 						room1.type = "hall";
 						rooms.push(room1)
 
-						let room2 = new Room(rooms.length, x, y, 2, dy);
+						let room2 = new Room(rooms.length, x, y, 1, dy);
 						room2.type = "hall";
 						rooms.push(room2);
 					}
@@ -284,21 +296,25 @@ DungeonGenerator.generate = () => {
 			});
 		}
 
-		{
-			rooms.forEach(room => {
-				let touched = false;
+		rooms.filter(a => {
+			return a.type === "hall"
+		}).forEach(hall => {
+			hall.expand(2);
+		});
 
-				rooms.filter(a => {
-					return a.type === "hall"
-				}).forEach(hall => {
-					if (room.touches(hall)) {
-						touched = true;
-					}
-				});
+		rooms.forEach(room => {
+			let touched = false;
 
-				room.touched = touched;
+			rooms.filter(a => {
+				return a.type === "hall"
+			}).forEach(hall => {
+				if (room.touches(hall)) {
+					touched = true;
+				}
 			});
-		}
+
+			room.touched = touched;
+		});
 
 		let minX = 0;
 		let maxX = 0;
@@ -343,6 +359,34 @@ DungeonGenerator.generate = () => {
 				height: room.height,
 				type: room.type,
 				name: "Cool Room"
+			});
+		});
+
+		outRooms = _.sortBy(outRooms, o => { return o.type === "hall" ? 0 : o.type === "regular" ? 1 : 2 });
+		outRooms = _.map(outRooms, (room, id) => { room.id = id; return room; });
+
+		outRooms.forEach(a => {
+			a.touching = [];
+			a.touchingHubs = [];
+			a.touchingRegulars = [];
+			a.touchingHalls = [];
+
+			outRooms.forEach(b => {
+				if (a.id === b.id) {
+					return;
+				}
+
+				if (poop(a, b)) {
+					a.touching.push(b.id);
+
+					if (b.type === "hub") {
+						a.touchingHubs.push(b.id);
+					} else if (b.type === "regular") {
+						a.touchingRegulars.push(b.id);
+					} else if (b.type === "hall") {
+						a.touchingHalls.push(b.id);
+					}
+				}
 			});
 		});
 

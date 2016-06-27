@@ -6,6 +6,10 @@ import DB from "./db";
 import Server from "./server";
 import Game from "./game";
 
+process.on('uncaughtException', err => {
+	console.log(err);
+});
+
 DB.init(config).then(() => {
 	console.log("[DB] ready");
 

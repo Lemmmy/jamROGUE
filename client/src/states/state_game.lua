@@ -13,8 +13,8 @@ function game.init(main)
     game.sidebarMenuShowing = false
 
     game.onlineUsers = 0
-    game.log = {}
 
+    game.log = {}
     game.logWindow = window.create(buffer, 1, h - 3, w - 20, 4, true)
 
     game.lastPollTime = os.clock()
@@ -22,6 +22,15 @@ function game.init(main)
     http.request(constants.server .. "map.json")
 
     game.main.connection.players = {}
+
+    game.viewportWidth = w - 22
+    game.viewportHeight = h - 6
+    game.viewportWindow = framebuffer.new(game.viewportWidth, game.viewportHeight, true, 1, 1)
+
+    game.movingLeft = false
+    game.movingRight = false
+    game.movingUp = false
+    game.movingDown = false
 end
 
 function game.print(text)
@@ -47,7 +56,7 @@ function game.httpSuccess(url, response)
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     elseif url == constants.server .. "map.json" then
-        game.rooms = json.decode(response.readAll()).rooms
+        game.loadMap(json.decode(response.readAll()).rooms)
     end
 end
 
@@ -95,6 +104,8 @@ function game.drawSidebar()
     local online = "Online: " .. game.onlineUsers
     buffer.setCursorPos(w - 17 + ((17 - #online) / 2), 2)
     buffer.write(online)
+    buffer.setBackgroundColour(colours.grey)
+    buffer.setTextColour(colours.white)
 
     if game.sidebarScreen == 0 then
         game.drawSidebarInfo()
@@ -129,9 +140,9 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
-    buffer.setCursorPos(w - 19, 4)
+    buffer.setCursorPos(w - 18, 5)
     buffer.write(os.clock())
-    buffer.setCursorPos(w - 19, 5)
+    buffer.setCursorPos(w - 18, 6)
     buffer.write(game.lastPollTime)
 end
 
@@ -150,13 +161,31 @@ function game.drawSidebarMenu()
 end
 
 local function worldToViewportPos(x, y)
-    return x - game.viewportCenterX + 2 + game.viewportWidth / 2, y - game.viewportCenterY + 2 + game.viewportHeight / 2
+    return x - game.viewportCenterX + game.viewportWidth / 2 + 1, y - game.viewportCenterY + game.viewportHeight / 2 + 1
 end
 
 function game.drawGame()
+    if game.main.connection.player then
+        game.viewportCenterX = game.main.connection.player.x
+        game.viewportCenterY = game.main.connection.player.y
+        game.worldLeft = game.viewportCenterX - (game.viewportWidth / 2)
+        game.worldRight = game.viewportCenterX + (game.viewportWidth / 2)
+        game.worldTop = game.viewportCenterY - (game.viewportHeight / 2)
+        game.worldBottom = game.viewportCenterY + (game.viewportHeight / 2)
+    end
+
     game.drawWindowBorder()
+
+    game.viewportWindow.clear()
+
     game.drawRooms()
     game.drawEntities()
+
+    local poop = term.current()
+
+    term.redirect(buffer)
+    framebuffer.draw(game.viewportWindow.buffer)
+    term.redirect(poop)
 end
 
 function game.drawWindowBorder()
@@ -188,73 +217,179 @@ function game.drawWindowBorder()
     buffer.setTextColour(colours.white)
 end
 
+local function roomIntersects(a, b)
+    return (a.x <= b.x + b.width and
+            a.x + b.width >= b.x and
+            a.y <= b.y + b.height and
+            a.y + a.height >= b.y);
+end
+
+local min = math.min
+local max = math.max
+local log = math.log
+
+local rep = string.rep
+local sub = string.sub
+
 function game.drawRooms()
-    game.viewportWidth = w - 23
-    game.viewportHeight = h - 6
+    -- fuck table lookups
 
-    if game.main.connection.player then
-        game.viewportCenterX = game.main.connection.player.x
-        game.viewportCenterY = game.main.connection.player.y
-        game.worldLeft = game.viewportCenterX - (game.viewportWidth / 2)
-        game.worldRight = game.viewportCenterX + (game.viewportWidth / 2)
-        game.worldTop = game.viewportCenterY - (game.viewportHeight / 2)
-        game.worldBottom = game.viewportCenterY + (game.viewportHeight / 2)
-    end
+    local viewportWindow = game.viewportWindow
+    local viewportSetTextColour = viewportWindow.setTextColor
+    local viewportSetBackgroundColour = viewportWindow.setBackgroundColor
+    local viewportSetCursorPos = viewportWindow.setCursorPos
+    local viewportWrite = viewportWindow.write
+    local viewportBlit = viewportWindow.blit
 
-    buffer.setTextColour(colours.grey)
-    for y = 2, h - 5 do
-        buffer.setCursorPos(2, y)
-        buffer.write(("\183"):rep(w - 22))
+    local worldLeft = game.worldLeft
+    local worldRight = game.worldRight
+    local worldTop = game.worldTop
+    local worldBottom = game.worldBottom
+    local viewportWidth = game.viewportWidth
+    local viewportHeight = game.viewportHeight
+
+    viewportSetTextColour(colours.grey)
+    for y = 1, viewportHeight do
+        viewportSetCursorPos(1, y)
+        viewportWrite(rep("\183", viewportWidth))
     end
-    buffer.setTextColour(colours.white)
+    viewportSetTextColour(colours.white)
 
     if not game.rooms then
-        buffer.setCursorPos(((game.viewportWidth - #"Downloading map") / 2) + 4, game.viewportHeight / 2 + 2)
-        buffer.write("Downloading map")
+        viewportSetCursorPos((viewportWidth - #"Downloading map") / 2 + 1, viewportHeight / 2 + 1)
+        viewportWrite("Downloading map")
     else
         if game.main.connection.player then
             for _, room in ipairs(game.rooms) do
-                if  game.worldLeft    <= room.x + room.width and
-                    game.worldRight	  >= room.x and
-                    game.worldTop     <= room.y + room.height and
-                    game.worldBottom  >= room.y then
-                    local roomX, roomY = worldToViewportPos(room.x, room.y)
+                local roomWidth = room.width
+                local roomHeight = room.height
+                local roomType = room.type
 
-                    buffer.setBackgroundColour(room.type == "hub" and colours.red or room.type == "hall" and colours.orange or colours.blue)
-                    for x = 1, room.width do
-                        for y = 1, room.height do
-                            if roomX + x > 1 and roomY + y > 2 and roomX + x < game.viewportWidth + 3 and roomY + y < game.viewportHeight + 2 then
-                                buffer.setCursorPos(roomX + x, roomY + y)
-                                buffer.write(" ");
+                if  worldLeft    <= room.x + roomWidth and
+                    worldRight	  >= room.x and
+                    worldTop     <= room.y + roomHeight and
+                    worldBottom  >= room.y then
+                    local roomStartX, roomStartY = worldToViewportPos(room.x, room.y)
+
+                    local colour = colours.lightGrey
+                    local colourHex = "8"
+
+                    viewportSetBackgroundColour(colours.black)
+                    viewportSetTextColour(colour)
+
+                    for y = 1, min(roomHeight - 1, viewportHeight - roomStartY + 1) do
+                        local amt = min(roomWidth, viewportWidth - roomStartX + 2)
+
+                        viewportSetCursorPos(roomStartX, roomStartY + y)
+                        viewportBlit(rep("\183", amt), rep(colourHex, amt), rep("f", amt))
+                    end
+
+                    viewportSetBackgroundColour(colour)
+
+                    for x = 0, roomWidth do
+                        viewportSetBackgroundColour(colour)
+                        if roomStartX + x >= 1 and roomStartY >= 1 and roomStartX + x <= viewportWidth + 1 and roomStartY <= viewportHeight + 1 then
+                            local stop = false
+
+                            if room.touchingHalls and #room.touchingHalls > 0 then
+                                for _, hid in ipairs(room.touchingHalls) do
+                                    local hall = game.rooms[hid + 1]
+
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y >= hall.y then
+                                        stop = true
+                                    end
+                                end
+                            end
+
+                            if not stop then
+                                viewportSetCursorPos(roomStartX + x, roomStartY)
+                                viewportWrite(" ")
+                            end
+                        end
+
+                        if roomStartX + x >= 1 and roomStartY + roomHeight >= 1 and roomStartX + x <= viewportWidth + 1 and roomStartY + roomHeight <= viewportHeight + 1 then
+                            local stop = false
+
+                            if room.touchingHalls and #room.touchingHalls > 0 then
+                                for _, hid in ipairs(room.touchingHalls) do
+                                    local hall = game.rooms[hid + 1]
+
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y + roomHeight <= hall.y + hall.height then
+                                        stop = true
+                                    end
+                                end
+                            end
+
+                            if not stop then
+                                viewportSetCursorPos(roomStartX + x, roomStartY + roomHeight)
+                                viewportWrite(" ")
+                            end
+                        end
+                        viewportSetBackgroundColour(colour)
+                    end
+
+                    for y = 0, roomHeight do
+                        if roomStartX >= 1 and roomStartY + y >= 1 and roomStartX <= viewportWidth + 1 and roomStartY + y <= viewportHeight + 1 then
+                            local stop = false
+
+                            if room.touchingHalls and #room.touchingHalls > 0 then
+                                for _, hid in ipairs(room.touchingHalls) do
+                                    local hall = game.rooms[hid + 1]
+
+                                    if hid ~= room.id and room.y + y >= hall.y + 1 and room.y + y <= hall.y + hall.height - 1 and room.x >= hall.x + 1 then
+                                        stop = true
+                                    end
+                                end
+                            end
+
+                            if not stop then
+                                viewportSetCursorPos(roomStartX, roomStartY + y)
+                                viewportWrite(" ")
+                            end
+                        end
+
+                        if roomStartX + roomWidth >= 1 and roomStartY + y >= 1 and roomStartX + roomWidth <= viewportWidth + 1 and roomStartY + y <= viewportHeight + 1 then
+                            local stop = false
+
+                            if room.touchingHalls and #room.touchingHalls > 0 then
+                                for _, hid in ipairs(room.touchingHalls) do
+                                    local hall = game.rooms[hid + 1]
+
+                                    if hid ~= room.id and room.y + y >= hall.y + 1 and room.y + y <= hall.y + hall.height - 1 and room.x + roomWidth <= hall.x + hall.width then
+                                        stop = true
+                                    end
+                                end
+                            end
+
+                            if not stop then
+                                viewportSetCursorPos(roomStartX + roomWidth, roomStartY + y)
+                                viewportWrite(" ")
                             end
                         end
                     end
-                    buffer.setCursorPos(roomX, roomY)
-                    buffer.write(room.id)
-                    buffer.setBackgroundColour(colours.black)
                 end
             end
         end
     end
 
-    buffer.setBackgroundColour(colours.black)
+    viewportSetBackgroundColour(colours.black)
 end
 
 function game.drawEntities()
-    buffer.setTextColour(colours.lightGrey)
+    game.viewportWindow.setTextColour(colours.lightGrey)
     for _, player in ipairs(game.main.connection.players) do
         local playerX, playerY = worldToViewportPos(player.x, player.y)
-        if playerX > 1 and playerY > 2 and playerX < game.viewportWidth + 3 and playerY < game.viewportHeight + 2 then
-            buffer.setCursorPos(playerX, playerY)
-            buffer.write("\2")
+        if playerX >= 1 and playerY >= 1 and playerX <= game.viewportWidth + 1 and playerY <= game.viewportHeight + 1 then
+            game.viewportWindow.setCursorPos(playerX, playerY)
+            game.viewportWindow.write("\2")
         end -- my life
     end
 
-    buffer.setTextColour(colours.white)
+    game.viewportWindow.setTextColour(colours.white)
     if game.main.connection.player then
         local playerX, playerY = worldToViewportPos(game.main.connection.player.x, game.main.connection.player.y)
-        buffer.setCursorPos(playerX, playerY)
-        buffer.write("\2")
+        game.viewportWindow.setCursorPos(playerX, playerY)
+        game.viewportWindow.write("\2")
     end
 end
 
@@ -309,17 +444,27 @@ end
 function game.key(key)
     if game.main.connection.player then
         if key == "left" then
-            game.main.connection.player.x = game.main.connection.player.x - 1
-            game.playerMoved()
+            game.movingLeft = true
         elseif key == "right" then
-            game.main.connection.player.x = game.main.connection.player.x + 1
-            game.playerMoved()
+            game.movingRight = true
         elseif key == "up" then
-            game.main.connection.player.y = game.main.connection.player.y - 1
-            game.playerMoved()
+            game.movingUp = true
         elseif key == "down" then
-            game.main.connection.player.y = game.main.connection.player.y + 1
-            game.playerMoved()
+            game.movingDown = true
+        end
+    end
+end
+
+function game.keyUp(key)
+    if game.main.connection.player then
+        if key == "left" then
+            game.movingLeft = false
+        elseif key == "right" then
+            game.movingRight = false
+        elseif key == "up" then
+            game.movingUp = false
+        elseif key == "down" then
+            game.movingDown = false
         end
     end
 end
@@ -331,10 +476,45 @@ function game.update()
     end
 end
 
-function game.playerMoved()
-    http.request(constants.server .. "game/move",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
-                                                    "&x=" .. game.main.connection.player.x ..
-                                                    "&y=" .. game.main.connection.player.y)
+function game.updateCent()
+    local dx = 0
+    local dy = 0
+
+    if game.movingLeft then
+        dx = dx - 1
+    end
+    if game.movingRight then
+        dx = dx + 1
+    end
+    if game.movingUp then
+        dy = dy - 1
+    end
+    if game.movingDown then
+        dy = dy + 1
+    end
+
+    if dx ~= 0 or dy ~= 0 then
+        local destX = game.main.connection.player.x + dx
+        local destY = game.main.connection.player.y + dy
+
+        local inside = false
+
+        for _, room in ipairs(game.rooms) do
+            if room.x + 1 <= destX and room.y + 1 <= destY and room.x + room.width - 1 >= destX and room.y + room.height - 1 >= destY then
+                inside = true
+                break
+            end
+        end
+
+        if inside then
+            game.main.connection.player.x = destX
+            game.main.connection.player.y = destY
+
+            http.request(constants.server .. "game/move",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
+                                                            "&x=" .. game.main.connection.player.x ..
+                                                            "&y=" .. game.main.connection.player.y)
+        end
+    end
 end
 
 function game.updateOnlineUsers(data)
@@ -372,6 +552,10 @@ function game.move(data)
             player.room = data.room
         end
     end
+end
+
+function game.loadMap(rooms)
+    game.rooms = rooms
 end
 
 game.events = {

@@ -55,6 +55,8 @@ let Server = {
 				console.log("[Webserver] Ready");
 
 				resolve();
+			}).on('error', err => {
+				console.log(err);
 			});
 
 			Server.app = app;

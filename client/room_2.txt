@@ -1,0 +1,21 @@
+y: 12
+touchingHubs: table: 1e6584b9
+height: 40
+touching: table: 22fc9e49
+touchingRegulars: table: 5216d1c1
+type: hall
+id: 2
+touchingHalls: table: c351dad
+width: 4
+name: Hall
+x: 6
+  Touching
+    1: table: 3ec710de
+    2: table: 788fdf99
+    3: table: 1c738190
+  Touching Hubs
+    1: table: 3ec710de
+  Touching Regulars
+    1: table: 788fdf99
+  Touching Halls
+    1: table: 1c738190

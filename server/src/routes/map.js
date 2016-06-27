@@ -21,7 +21,11 @@ export default app => {
 				spawnX: room.spawnX,
 				spawnY: room.spawnY,
 				type: room.type,
-				name: room.name
+				name: room.name,
+				touching: room.touching,
+				touchingHubs: room.touchingHubs,
+				touchingRegular: room.touchingRegulars,
+				touchingHalls: room.touchingHalls
 			};
 		});
 
