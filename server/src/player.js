@@ -134,6 +134,19 @@ class Player {
 		this.x = x;
 		this.y = y;
 
+		let self = this;
+		let gotRoom = false;
+		let oldRoom = this.room;
+
+		this.Game.rooms.forEach(room => {
+			if (room.type === "hall" || gotRoom) return;
+
+			if (self.Game.roomIntersectsWithPoint(room, self.x, self.y)) {
+				gotRoom = true;
+				self.room = room.id;
+			}
+		});
+
 		this.Game.broadcastToAllBut(this.name, "move", {
 			player: this.name,
 			x: this.x,
@@ -141,7 +154,16 @@ class Player {
 			room: this.room
 		});
 
-		DB.models.User.findByIdAndUpdate(this.id, { x: this.x, y: this.y });
+		if (!gotRoom) {
+			this.room = -1;
+		}
+
+		if (oldRoom !== this.room) {
+			this.addEvent("room", gotRoom ? this.Game.roomToJSON(this.Game.rooms[this.room]) : {});
+			this.notify();
+		}
+
+		DB.models.User.findByIdAndUpdate(this.id, { x: this.x, y: this.y, room: this.room });
 	}
 }
 

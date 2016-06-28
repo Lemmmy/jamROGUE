@@ -6,7 +6,7 @@ import _ from "lodash";
 
 let DungeonGenerator = {};
 
-let g = gm(768, 768, "white");
+let g = gm(600, 600, "white");
 
 let rooms = [];
 
@@ -211,7 +211,7 @@ DungeonGenerator.generate = () => {
 			let skip;
 
 			let bigRooms = rooms.filter(room => {
-				return room.type === "hub"
+				return room.type === "hub";
 			});
 
 			for (let i = 0; i < bigRooms.length; i++) {
@@ -255,7 +255,7 @@ DungeonGenerator.generate = () => {
 			let a, b;
 
 			rooms.filter(room => {
-				return room.type === "hub"
+				return room.type === "hub";
 			}).forEach(outer => {
 				if (!outer.touching) return;
 
@@ -272,21 +272,21 @@ DungeonGenerator.generate = () => {
 
 					x = Math.floor(a.getCenterX());
 					y = Math.floor(a.getCenterY());
-					dx = Math.floor(b.getCenterX() - x);
-					dy = Math.floor(b.getCenterY() - y);
+					dx = Math.floor(b.getCenterX()) - x;
+					dy = Math.floor(b.getCenterY()) - y;
 
 					if (Math.random() >= 0.5) {
 						let room1 = new Room(rooms.length, x, y, dx + 1, 1);
 						room1.type = "hall";
-						rooms.push(room1)
+						rooms.push(room1);
 
 						let room2 = new Room(rooms.length, x + dx, y, 1, dy);
 						room2.type = "hall";
 						rooms.push(room2);
 					} else {
-						let room1 = new Room(rooms.length, x, y + dy, dx + 1, 1);
+						let room1 = new Room(rooms.length, x, y + dy, dx, 1);
 						room1.type = "hall";
-						rooms.push(room1)
+						rooms.push(room1);
 
 						let room2 = new Room(rooms.length, x, y, 1, dy);
 						room2.type = "hall";
@@ -297,7 +297,7 @@ DungeonGenerator.generate = () => {
 		}
 
 		rooms.filter(a => {
-			return a.type === "hall"
+			return a.type === "hall";
 		}).forEach(hall => {
 			hall.expand(1);
 		});
@@ -306,7 +306,7 @@ DungeonGenerator.generate = () => {
 			let touched = false;
 
 			rooms.filter(a => {
-				return a.type === "hall"
+				return a.type === "hall";
 			}).forEach(hall => {
 				if (room.touches(hall)) {
 					touched = true;
@@ -358,12 +358,12 @@ DungeonGenerator.generate = () => {
 				width: room.width,
 				height: room.height,
 				type: room.type,
-				name: "Cool Room"
+				name: "Room"
 			});
 		});
 
-		outRooms = _.sortBy(outRooms, o => { return o.type === "hall" ? 0 : o.type === "regular" ? 1 : 2 });
-		outRooms = _.map(outRooms, (room, id) => { room.id = id; return room; });
+		outRooms = _.sortBy(outRooms, o => { return o.type === "hall" ? 0 : o.type === "regular" ? 1 : 2; });
+		outRooms = _.map(outRooms, (room, id) => { room.id = id; room.name = "Room #" + id; return room; });
 
 		outRooms.forEach(a => {
 			a.touching = [];
@@ -394,17 +394,17 @@ DungeonGenerator.generate = () => {
 			let alpha = room.type === "hub" ? "88" : room.type === "hall" ? "33" : "aa";
 			g.fill((room.type === "hub" ? "#ff0000" : room.type === "hall" ? "#00ff00" : "#0000ff") + alpha);
 
-			let x = (Math.floor(512 - (maxX + Math.abs(minX))) / 2) + room.x;
-			let y = (Math.floor(512 - (maxY + Math.abs(minY))) / 2) + room.y;
+			let x = (Math.floor(600 - (maxX + Math.abs(minX))) / 2) + room.x;
+			let y = (Math.floor(600 - (maxY + Math.abs(minY))) / 2) + room.y;
 
-			g.drawRectangle(Math.max(x, 0), Math.max(y, 0), Math.min(x + room.width), Math.min(y + room.height));
+			g.drawRectangle(Math.floor(Math.max(x, 0)), Math.floor(Math.max(y, 0)), Math.floor(Math.min(x + room.width)), Math.floor(Math.min(y + room.height)));
 		});
 
 		g.stroke("transparent", 0).fill("white").font("Lato.ttf").fontSize(8);
 
 		outRooms.forEach(room => {
-			let x = (512 - (maxX + Math.abs(minX))) / 2 + room.x;
-			let y = (512 - (maxY + Math.abs(minY))) / 2 + room.y;
+			let x = (600 - (maxX + Math.abs(minX))) / 2 + room.x;
+			let y = (600 - (maxY + Math.abs(minY))) / 2 + room.y;
 
 			g.drawText(x + 2, y + 8, room.id);
 		});
@@ -444,13 +444,13 @@ DungeonGenerator.generate = () => {
 			`Shift iterations: ${iteration}\n` +
 			`Time taken: ${(end - start).toFixed(3)} ms`);*/
 
-		g.write("dungeon.png", err => {
+		g.filter("Point").resize(1200, 1200).write("dungeon.png", err => {
 			if (err)
 				console.error(err);
 		});
 
 		resolve(outRooms);
 	});
-}
+};
 
 export default DungeonGenerator;

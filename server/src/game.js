@@ -111,6 +111,13 @@ let Game = {
 			touchingRegular: room.touchingRegulars,
 			touchingHalls: room.touchingHalls
 		};
+	},
+
+	roomIntersectsWithPoint(room, x, y) {
+		return (room.x <= x &&
+				room.x + room.width >= x &&
+				room.y <= y &&
+				room.y + room.height >= y);
 	}
 };
 

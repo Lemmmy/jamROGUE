@@ -25,7 +25,8 @@ function game.init(main)
     game.onlineUsers = 0
 
     game.log = {}
-    game.logWindow = framebuffer.new(w - 19, 4, true, 0, h - 4)
+    game.logWindow = framebuffer.new(w - 20, 4, true, 0, h - 4)
+    game.logScrollPos = 1
 
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
@@ -159,6 +160,11 @@ function game.drawSidebarInfo()
     buffer.write(os.clock())
     buffer.setCursorPos(w - 18, 6)
     buffer.write(game.lastPollTime)
+
+    if game.main.connection.player then
+        buffer.setCursorPos(w - 18, 8)
+        buffer.write(game.main.connection.player.x .. " " .. game.main.connection.player.y)
+    end
 end
 
 function game.drawSidebarMenu()
@@ -241,14 +247,15 @@ function game.drawWindowBorder()
         buffer.write("\124")
     end
 
-    local room = (game.main.connection.room and game.main.connection.room.name or "Loading")
-    local a = "[ " .. (" "):rep(#room) .. " ]"
-    buffer.setCursorPos(((w - 17) - #a) / 2, 1)
-    buffer.write(a)
+    if game.main.connection.room and game.main.connection.room.name then
+        local a = "[ " .. (" "):rep(#game.main.connection.room.name) .. " ]"
+        buffer.setCursorPos(((w - 17) - #a) / 2, 1)
+        buffer.write(a)
 
-    buffer.setTextColour(colours.lightBlue)
-    buffer.setCursorPos(((w - 17) - #a) / 2 + 2, 1)
-    buffer.write(room)
+        buffer.setTextColour(colours.lightBlue)
+        buffer.setCursorPos(((w - 17) - #a) / 2 + 2, 1)
+        buffer.write(game.main.connection.room.name)
+    end
 
     buffer.setTextColour(colours.white)
 end
@@ -324,7 +331,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y >= hall.y then
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width and room.y >= hall.y and room.y ~= hall.y then
                                         stop = true
                                     end
                                 end
@@ -336,14 +343,14 @@ function game.drawRooms()
                             end
                         end
 
-                        if roomStartX + x >= 1 and roomStartY + roomHeight >= 1 and roomStartX + x <= viewportWidth + 1 and roomStartY + roomHeight <= viewportHeight + 1 then
+                        if roomStartX + x >= 1 and roomStartY + roomHeight >= 1 and roomStartX + x <= viewportWidth + 1 and roomStartY + roomHeight - 1 <= viewportHeight + 1 then
                             local stop = false
 
                             if room.touchingHalls and #room.touchingHalls > 0 then
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y + roomHeight <= hall.y + hall.height then
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width and room.y + roomHeight <= hall.y + hall.height then
                                         stop = true
                                     end
                                 end
@@ -384,7 +391,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.y + y >= hall.y + 1 and room.y + y <= hall.y + hall.height - 1 and room.x + roomWidth <= hall.x + hall.width then
+                                    if hid ~= room.id and room.y + y >= hall.y + 1 and room.y + y <= hall.y + hall.height - 1 and room.x + roomWidth < hall.x + hall.width then
                                         stop = true
                                     end
                                 end
