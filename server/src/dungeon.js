@@ -299,7 +299,7 @@ DungeonGenerator.generate = () => {
 		rooms.filter(a => {
 			return a.type === "hall"
 		}).forEach(hall => {
-			hall.expand(2);
+			hall.expand(1);
 		});
 
 		rooms.forEach(room => {

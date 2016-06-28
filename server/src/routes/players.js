@@ -1,21 +1,16 @@
 import DB from "../db";
 import Game from "../game";
+import _ from "lodash";
 
 export default app => {
 	app.get("/players", (req, res) => {
 		let out = [];
 
-		DB.r.table("users").run().then(results => {
-			results.forEach(player => {
-				out.push({
-					name: player.name
-				});
-			});
-
+		DB.models.User.findAll().then(results => {
 			res.json({
 				ok: true,
 				count: out.length,
-				players: out
+				players: _.map(results => { return results.name })
 			});
 		});
 	});

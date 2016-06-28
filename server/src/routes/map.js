@@ -1,5 +1,6 @@
 import path from "path";
 import Game from "../game";
+import _ from "lodash";
 
 export default app => {
 	app.get("/map", (req, res) => {
@@ -8,30 +9,9 @@ export default app => {
 	});
 
 	app.get("/map.json", (req, res) => {
-		let out = [];
-
-		Game.rooms.forEach(room => {
-			out[room.id] = {
-				id: room.id,
-				x: room.x,
-				y: room.y,
-				width: room.width,
-				height: room.height,
-				spawn: room.spawn,
-				spawnX: room.spawnX,
-				spawnY: room.spawnY,
-				type: room.type,
-				name: room.name,
-				touching: room.touching,
-				touchingHubs: room.touchingHubs,
-				touchingRegular: room.touchingRegulars,
-				touchingHalls: room.touchingHalls
-			};
-		});
-
 		res.json({
 			ok: true,
-			rooms: out
+			rooms: _.map(Game.rooms, room => { return Game.roomToJSON(room); })
 		});
 	});
 };

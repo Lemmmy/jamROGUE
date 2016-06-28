@@ -9,9 +9,7 @@ export default app => {
 			});
 		}
 
-		DB.r.table("users").filter(user => {
-			return user("name").match(`(?i)^${req.params.name}$`);
-		}).count().run().then(count => {
+		DB.models.User.count({ name: new RegExp(`^${req.params.name}$`, "i") }).then(count => {
 			res.json({
 				ok: true,
 				available: count === 0

@@ -6,6 +6,16 @@ local w, h = term.getSize()
 
 local game = {}
 
+local min = math.min
+local max = math.max
+local log = math.log
+local floor = math.floor
+local ceil = math.ceil
+local random = math.random
+
+local rep = string.rep
+local sub = string.sub
+
 function game.init(main)
     game.main = main
 
@@ -15,7 +25,7 @@ function game.init(main)
     game.onlineUsers = 0
 
     game.log = {}
-    game.logWindow = window.create(buffer, 1, h - 3, w - 20, 4, true)
+    game.logWindow = framebuffer.new(w - 19, 4, true, 0, h - 4)
 
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
@@ -31,12 +41,17 @@ function game.init(main)
     game.movingRight = false
     game.movingUp = false
     game.movingDown = false
+
+    game.typingMessage = false
 end
 
 function game.print(text)
-    game.log[#game.log + 1] = text
+    game.log[#game.log + 1] = {
+        text = text,
+        time = os.clock()
+    }
 
-    if #game.log > 4 then
+    if #game.log > 20 then
         table.remove(game.log, 1)
     end
 end
@@ -160,8 +175,29 @@ function game.drawSidebarMenu()
     buffer.setTextColour(colours.white)
 end
 
+function game.drawLog()
+    local current = term.current()
+    term.redirect(game.logWindow)
+    term.clear()
+    term.setCursorPos(1, 1)
+
+    for _, v in ipairs(game.log) do
+        print(v.text)
+    end
+
+    term.redirect(current)
+
+    term.redirect(buffer)
+    framebuffer.draw(game.logWindow.buffer)
+    term.redirect(current)
+end
+
 local function worldToViewportPos(x, y)
     return x - game.viewportCenterX + game.viewportWidth / 2 + 1, y - game.viewportCenterY + game.viewportHeight / 2 + 1
+end
+
+local function viewportToWorldPos(x, y)
+    return floor((game.viewportCenterX - (game.viewportWidth / 2)) + x), floor((game.viewportCenterY - (game.viewportHeight / 2)) + y)
 end
 
 function game.drawGame()
@@ -223,13 +259,6 @@ local function roomIntersects(a, b)
             a.y <= b.y + b.height and
             a.y + a.height >= b.y);
 end
-
-local min = math.min
-local max = math.max
-local log = math.log
-
-local rep = string.rep
-local sub = string.sub
 
 function game.drawRooms()
     -- fuck table lookups
@@ -393,21 +422,6 @@ function game.drawEntities()
     end
 end
 
-function game.drawLog()
-    local current = term.current()
-    term.redirect(game.logWindow)
-    term.clear()
-    term.setCursorPos(1, 1)
-
-    for _, v in ipairs(game.log) do
-        print(v)
-    end
-
-    term.redirect(current)
-
-    game.logWindow.redraw()
-end
-
 function game.mouseClick(button, x, y)
     if button == 1 then
         if x >= w - 19 and x <= w then
@@ -435,6 +449,16 @@ function game.mouseClick(button, x, y)
                 if y == h - 1 then
                     http.request(constants.server .. "game/quit", "token=" .. textutils.urlEncode(game.main.connection.token))
                     game.main.changeState("menu")
+                end
+            end
+        end
+
+        if x > 1 and y > 1 and x < game.viewportWidth + 2 and y < game.viewportHeight + 2 then
+            local wx, wy = viewportToWorldPos(x - 1, y - 1)
+
+            for _, player in ipairs(game.main.connection.players) do
+                if player.x == wx and player.y == wy then
+                    game.print("That's " .. player.name .. (random(1, 2) == 1 and "." or "!"))
                 end
             end
         end
@@ -470,7 +494,7 @@ function game.keyUp(key)
 end
 
 function game.update()
-    if os.clock() - game.lastPollTime > 20.5 then
+    if os.clock() - game.lastPollTime > 21.25 then
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
@@ -522,10 +546,10 @@ function game.updateOnlineUsers(data)
 end
 
 function game.spawn(data)
-    game.main.connection.player = Player(data.roomID, data.x, data.y, data.name)
+    game.main.connection.player = Player(data.player.roomID, data.player.x, data.player.y, data.player.name)
 
     for _, player in ipairs(data.players) do
-        if player.name:lower() ~= data.name:lower() then
+        if player.name:lower() ~= data.player.name:lower() then
             table.insert(game.main.connection.players, Player(player.roomID, player.x, player.y, player.name))
         end
     end
@@ -533,6 +557,14 @@ end
 
 function game.join(data)
     table.insert(game.main.connection.players, Player(data.roomID, data.x, data.y, data.name))
+end
+
+function game.quit(data)
+    for i, player in ipairs(game.main.connection.players) do
+        if player.name == data.name then
+            table.remove(game.main.connection.players, i)
+        end
+    end
 end
 
 function game.room(data)

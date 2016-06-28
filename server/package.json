@@ -15,7 +15,6 @@
   "author": "Lemmmy",
   "license": "ISC",
   "dependencies": {
-    "@flyover/node-box2d": "0.0.1",
     "bcrypt-nodejs": "0.0.3",
     "bluebird": "^3.4.1",
     "body-parser": "^1.15.2",
@@ -24,7 +23,7 @@
     "gm": "^1.22.0",
     "hat": "0.0.3",
     "lodash": "^4.13.1",
-    "performance-now": "^0.2.0",
-    "rethinkdbdash": "^2.3.8"
+    "mongoose": "^4.5.2",
+    "performance-now": "^0.2.0"
   }
 }

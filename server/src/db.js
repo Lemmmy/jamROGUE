@@ -1,20 +1,41 @@
-import Rethink from "rethinkdbdash";
+import mongoose, {Schema} from "mongoose";
 import Promise from "bluebird";
 
 let DB = {
+	models: {},
+
 	init(config) {
 		return new Promise(resolve => {
-			DB.r = Rethink({
-				servers: [{
-					host: config.rethinkHost,
-					port: config.rethinkPort,
-					db: config.rethinkDB,
-					user: config.rethinkUser,
-					password: config.rethinkPass
-				}]
-			});
+			mongoose.Promise = Promise;
+			mongoose.connect(config.mongodbURI);
+			DB.m = mongoose.connection;
 
-			resolve();
+			DB.m.on("error", console.error.bind(console, "Poop: "));
+
+			DB.m.once("open", () => {
+				let userSchema = mongoose.Schema({
+					name: String,
+					password: String,
+					dungeonID: Number,
+					room: Number,
+					x: Number,
+					y: Number,
+					visitedRooms: Array,
+					items: Array,
+					money: Number,
+					xp: Number,
+				});
+
+				userSchema.set("toJSON", {
+					transform: (doc, user) => {
+						return _.omit(user, "password");
+					}
+				});
+
+				DB.models.User = mongoose.model("User", userSchema);
+
+				resolve();
+			});
 		});
 	}
 };

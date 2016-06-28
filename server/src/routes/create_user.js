@@ -26,9 +26,7 @@ export default app => {
 			});
 		};
 
-		DB.r.table("users").filter(user => {
-			return user("name").match(`(?i)^${req.params.name}$`)
-		}).count().run().then(count => {
+		DB.models.User.count({ name: new RegExp(`^${req.params.name}$`, "i") }).then(count => {
 			if (count > 0) {
 				return res.json({
 					ok: false,
@@ -36,10 +34,10 @@ export default app => {
 				});
 			}
 
-			DB.r.table("users").insert({
+			(new DB.models.User({
 				name: req.params.name,
 				password: bcrypt.hashSync(req.body.password)
-			}).run().then(() => {
+			})).save().then(() => {
 				res.json({
 					ok: true
 				});

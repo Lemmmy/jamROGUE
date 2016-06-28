@@ -4,6 +4,7 @@ import DungeonGenerator from "./dungeon";
 
 import hat from "hat";
 import bcrypt from "bcrypt-nodejs";
+import Promise from "bluebird";
 
 import _ from "lodash";
 
@@ -41,21 +42,19 @@ let Game = {
 				}
 			}
 
-			DB.r.table("users").filter(user => {
-				return user("name").match(`(?i)^${username}$`);
-			}).limit(1).run().then(results => {
-				if (results.length !== 1) {
+			DB.models.User.findOne({ name: new RegExp(`^${username}$`, "i") }).then(user => {
+				if (!user) {
 					return reject("incorrect_login");
 				}
-
-				let user = results[0];
 
 				if (!bcrypt.compareSync(password, user.password)) {
 					return reject("incorrect_login");
 				}
 
+				console.log(`Player ${user.name} connecting`);
+
 				let token = hat();
-				let player = new Player(Game, user.name, token, user.id);
+				let player = new Player(Game, user.name, token, user._id);
 				player.room = Game.spawnRoom;
 				player.x = Game.rooms[Game.spawnRoom].x + Game.rooms[Game.spawnRoom].spawnX;
 				player.y = Game.rooms[Game.spawnRoom].y + Game.rooms[Game.spawnRoom].spawnY;
@@ -82,7 +81,7 @@ let Game = {
 	broadcast(type, data) {
 		Game.players.forEach(player => {
 			player.addEvent(type, data);
-			player.notify()
+			player.notify();
 		});
 	},
 
@@ -91,8 +90,27 @@ let Game = {
 			if (but.toLowerCase() === player.name.toLowerCase()) return;
 
 			player.addEvent(type, data);
-			player.notify()
+			player.notify();
 		});
+	},
+
+	roomToJSON(room) {
+		return {
+			id: room.id,
+			x: room.x,
+			y: room.y,
+			width: room.width,
+			height: room.height,
+			spawn: room.spawn,
+			spawnX: room.spawnX,
+			spawnY: room.spawnY,
+			type: room.type,
+			name: room.name,
+			touching: room.touching,
+			touchingHubs: room.touchingHubs,
+			touchingRegular: room.touchingRegulars,
+			touchingHalls: room.touchingHalls
+		};
 	}
 };
 

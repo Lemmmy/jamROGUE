@@ -21,9 +21,27 @@ class Player {
 		this.x = 0;
 		this.y = 0;
 
-		console.log(`Player ${this.name} connected`);
-
 		setTimeout(this.ping.bind(this), 1000);
+
+		let self = this;
+
+		DB.models.User.findById(this.id).then(user => {
+			if (user.dungeonID && user.dungeonID == self.Game.dungeonID) {
+				self.room = user.room;
+				self.x = user.x;
+				self.y = user.y;
+			} else {
+				self.room = self.Game.spawnRoom;
+				self.x = self.Game.rooms[self.Game.spawnRoom].x + self.Game.rooms[self.Game.spawnRoom].spawnX;
+				self.y = self.Game.rooms[self.Game.spawnRoom].y + self.Game.rooms[self.Game.spawnRoom].spawnY;
+			}
+
+			self.Game.broadcastToAllBut(self.name, "join", self.toJSON());
+			self.addEvent("spawn", { player: self.toJSON(), players: _.map(self.Game.players, player => { return player.toJSON(); }) });
+			self.addEvent("room", self.Game.roomToJSON(self.Game.rooms[self.room]));
+
+			console.log(`Player ${self.name} connected`);
+		});
 	}
 
 	disconnect(reason) {
@@ -33,7 +51,7 @@ class Player {
 
 		this.Game.players.splice(this.Game.players.indexOf(this), 1);
 
-		this.Game.broadcast("player_quit", {
+		this.Game.broadcast("quit", {
 			name: this.name
 		});
 		this.Game.broadcast("online_users", this.Game.players.length);
@@ -90,7 +108,7 @@ class Player {
 
 		req.connection.setTimeout(20000);
 		req.connection.on("timeout", () => {
-			console.log(`Req timeout from ${self.name}`)
+			console.log(`Req timeout from ${self.name}`);
 			self.req = null;
 			self.res = null;
 
@@ -116,12 +134,14 @@ class Player {
 		this.x = x;
 		this.y = y;
 
-		Game.broadcastToAllBut(this.name, "move", {
+		this.Game.broadcastToAllBut(this.name, "move", {
 			player: this.name,
 			x: this.x,
 			y: this.y,
 			room: this.room
 		});
+
+		DB.models.User.findByIdAndUpdate(this.id, { x: this.x, y: this.y });
 	}
 }
 
