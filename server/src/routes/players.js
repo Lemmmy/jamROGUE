@@ -10,7 +10,7 @@ export default app => {
 			res.json({
 				ok: true,
 				count: out.length,
-				players: _.map(results => { return results.name })
+				players: _.map(results => { return results.name; })
 			});
 		});
 	});

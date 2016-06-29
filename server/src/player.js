@@ -24,6 +24,10 @@ class Player {
 		this.y = 0;
 		this.visitedRooms = [];
 
+		this.health = user.health;
+		this.level = user.level;
+		this.xp = user.xp;
+
 		setTimeout(this.ping.bind(this), 1000);
 
 		if (user.dungeonID && user.dungeonID == this.Game.dungeonID) {
@@ -48,13 +52,18 @@ class Player {
 
 		this.Game.broadcastToAllBut(this.name, "join", this.toJSON());
 		this.addEvent("spawn", { player: this.toJSON(), players: _.map(this.Game.players, player => { return player.toJSON(); }) });
-		this.addEvent("room", this.Game.roomToJSON(this.Game.rooms[this.room]));
+
+		if (this.room >= 0) {
+			this.addEvent("room", this.Game.roomToJSON(this.Game.rooms[this.room]));
+		}
 
 		console.log(`Player ${this.name} connected`);
 	}
 
 	disconnect(reason) {
 		this.deleted = true;
+
+		this.user.save();
 
 		console.log(`Player ${this.name} disconnected for reason ${reason}`);
 
@@ -73,6 +82,8 @@ class Player {
 		if (!this.connected && new Date().getTime() - this.disconnectedTime.getTime() > 10000) {
 			return this.disconnect("timeout");
 		}
+
+		this.user.save();
 
 		setTimeout(this.ping.bind(this), 1000);
 	}
@@ -176,15 +187,19 @@ class Player {
 		}
 
 		if (oldRoom !== this.room) {
-			this.addEvent("room", gotRoom ? this.Game.roomToJSON(this.Game.rooms[this.room]) : {});
+			this.addEvent("room", gotRoom ? _.set(this.Game.roomToJSON(this.Game.rooms[this.room]), "visited", true) : {});
 			this.notify();
+
+			this.visitedRooms.push(this.room);
 		}
 
 		this.user.x = this.x;
 		this.user.y = this.y;
-		this.user.room = this.room;
 
-		this.user.save();
+		if (oldRoom !== this.room) {
+			this.user.room = this.room;
+			this.user.visitedRooms = this.visitedRooms;
+		}
 	}
 }
 

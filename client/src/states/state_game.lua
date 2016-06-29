@@ -27,11 +27,12 @@ function game.init(main)
     game.log = {}
     game.logWindow = framebuffer.new(w - 20, 4, true, 0, h - 4)
     game.logScrollPos = 1
+    game.logShowing = false
 
     game.failedPolls = 0
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
-    http.request(constants.server .. "map.json")
+    http.request(constants.server .. "map.json", "token=" .. textutils.urlEncode(game.main.connection.token))
 
     game.main.connection.players = {}
 
@@ -45,7 +46,7 @@ function game.init(main)
     game.movingDown = false
 
     game.typingMessage = false
-
+    game.typing = ""
 end
 
 function game.print(text, colour)
@@ -94,6 +95,14 @@ function game.httpSuccess(url, response)
         end
     elseif url == constants.server .. "map.json" then
         game.loadMap(json.decode(response.readAll()).rooms)
+    elseif url == constants.server .. "game/chat" then
+        local resp = json.decode(response.readAll())
+
+        if resp.ok and resp.heard <= 0 then
+            local resps = {"Nobody heard you...", "Your voice echoes...", "You were unheard..."}
+
+            game.print(resps[math.random(#resps)], colours.red)
+        end
     end
 end
 
@@ -117,8 +126,8 @@ function game.httpFailure(url)
 end
 
 function game.draw()
-    game.drawHUD()
     game.drawGame()
+    game.drawHUD()
 end
 
 function game.drawHUD()
@@ -189,15 +198,11 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
+    buffer.setBackgroundColour(colours.black)
     buffer.setCursorPos(w - 18, 5)
-    buffer.write(os.clock())
-    buffer.setCursorPos(w - 18, 6)
-    buffer.write(game.lastPollTime)
-
-    if game.main.connection.player then
-        buffer.setCursorPos(w - 18, 8)
-        buffer.write(game.main.connection.player.x .. " " .. game.main.connection.player.y)
-    end
+    buffer.write((" "):rep(17))
+    buffer.setBackgroundColour(colours.grey)
+    buffer.write(" \3")
 end
 
 function game.drawSidebarMenu()
@@ -220,7 +225,6 @@ function game.drawLog()
     term.clear()
     term.setCursorPos(1, 1)
 
-
     for _, v in ipairs(game.log) do
         term.setTextColour(v.colour or colours.white)
         print(v.text)
@@ -231,6 +235,24 @@ function game.drawLog()
     term.redirect(current)
 
     buffer.setTextColour(colours.white)
+
+    buffer.setCursorPos(w - 20, h)
+    buffer.write(game.logShowing and "\31" or "\30")
+
+    if not game.typingMessage then
+        buffer.setTextColour(colours.grey)
+    end
+
+    buffer.setCursorPos(1, h)
+    buffer.write(#game.typing > 0 and game.typing:sub(-(w - 21)) or (game.typingMessage and "" or "Click to chat"))
+
+    buffer.setTextColour(colours.white)
+
+    if game.typingMessage then
+        if floor(game.main.stateTime * 2) % 2 == 0 then
+            buffer.write("\22")
+        end
+    end
 end
 
 local function worldToViewportPos(x, y)
@@ -344,8 +366,8 @@ function game.drawRooms()
                     worldBottom  >= room.y then
                     local roomStartX, roomStartY = worldToViewportPos(room.x, room.y)
 
-                    local colour = room.type == "hub" and (room.subType == "spawn" and colours.green or colours.red) or colours.lightGrey
-                    local colourHex = room.type == "hub" and (room.subType == "spawn" and "d" or "e") or "8"
+                    local colour = room.type == "hub" and (room.visited and (room.subType == "spawn" and colours.green or colours.red) or colours.grey) or ((room.type == "regular" and not room.visited) and colours.grey or colours.lightGrey) or colours.lightGrey
+                    local colourHex = room.type == "hub" and (room.visited and (room.subType == "spawn" and "d" or "e") or "7") or ((room.type == "regular" and not room.visited) and "7" or "8") or "8"
 
                     viewportSetBackgroundColour(colours.black)
                     viewportSetTextColour(colour)
@@ -354,7 +376,7 @@ function game.drawRooms()
                         local amt = min(roomWidth, viewportWidth - roomStartX + 2)
 
                         viewportSetCursorPos(roomStartX, roomStartY + y)
-                        viewportBlit(rep("\183", amt), rep(colourHex, amt), rep("f", amt))
+                        viewportBlit(rep(room.type ~= "hall" and (room.visited and "\183" or "\127") or "\183", amt), rep(colourHex, amt), rep("f", amt))
                     end
 
                     viewportSetBackgroundColour(colour)
@@ -387,7 +409,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y + roomHeight <= hall.y + hall.height then
+                                    if hid ~= room.id and room.x + x > hall.x and room.x + x < hall.x + hall.width and room.y + roomHeight <= hall.y + hall.height then
                                         stop = true
                                     end
                                 end
@@ -467,6 +489,21 @@ end
 
 function game.mouseClick(button, x, y)
     if button == 1 then
+        if x == w - 20 and y == h then
+            game.logShowing = not game.logShowing
+            local th = game.logShowing and h or 4
+
+            game.logWindow = framebuffer.new(w - 20, th, true, 0, h - th)
+
+            return
+        end
+
+        if x >= 1 and x <= w - 20 and y > h - 3 then
+            game.typingMessage = true
+        else
+            game.typingMessage = false
+        end
+
         if x >= w - 19 and x <= w then
             if y == 3 then
                 game.sidebarMenuShowing = not game.sidebarMenuShowing
@@ -509,29 +546,61 @@ function game.mouseClick(button, x, y)
 end
 
 function game.key(key)
-    if game.main.connection.player then
-        if key == "left" then
+    if game.main.connection.player and not game.typingMessage then
+        if key == "left" or key == "a" then
             game.movingLeft = true
-        elseif key == "right" then
+        elseif key == "right" or key == "d" then
             game.movingRight = true
-        elseif key == "up" then
+        elseif key == "up" or key == "w" then
             game.movingUp = true
-        elseif key == "down" then
+        elseif key == "down" or key == "s" then
             game.movingDown = true
+        end
+    end
+
+    if game.typingMessage then
+        if key == "backspace" then
+            if #game.typing > 0 then
+                game.typing = game.typing:sub(1, #game.typing - 1)
+            end
+        elseif key == "enter" then
+            http.request(constants.server .. "game/chat",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
+                                                            "&message=" .. game.typing)
+
+            game.typingMessage = false
+            game.typing = ""
         end
     end
 end
 
 function game.keyUp(key)
     if game.main.connection.player then
-        if key == "left" then
+        if key == "left" or key == "a" then
             game.movingLeft = false
-        elseif key == "right" then
+        elseif key == "right" or key == "d" then
             game.movingRight = false
-        elseif key == "up" then
+        elseif key == "up" or key == "w" then
             game.movingUp = false
-        elseif key == "down" then
+        elseif key == "down" or key == "s" then
             game.movingDown = false
+        end
+    end
+end
+
+function game.char(char)
+    if game.typingMessage then
+        if #game.typing < 100 then
+            game.typing = game.typing .. char
+        end
+    end
+end
+
+function game.paste(paste)
+    if game.typingMessage then
+        for char in paste:gmatch(".") do
+            if #game.typing < 100 then
+                game.typing = game.typing .. char
+            end
         end
     end
 end
@@ -544,6 +613,8 @@ function game.update()
 end
 
 function game.updateCent()
+    if game.typingMessage then return end
+
     local dx = 0
     local dy = 0
 
@@ -611,6 +682,12 @@ function game.quit(data)
 end
 
 function game.room(data)
+    if game.rooms and data.id and game.rooms[data.id + 1] and (game.rooms[data.id + 1].visited == nil or (game.rooms[data.id + 1].visited ~= nil and not game.rooms[data.id + 1].visited)) then
+        game.rooms[data.id + 1].visited = true
+
+        game.print("You discovered " .. data.name .. (math.random(1, 2) == 1 and "!" or "."), colours.lime)
+    end
+
     game.main.connection.room = data
 end
 
@@ -628,6 +705,10 @@ function game.serverMessage(data)
     game.print(data.text, data.colour or colours.white)
 end
 
+function game.chat(data)
+    game.print("<" .. data.from .. "> " .. data.message, data.from:lower() == game.main.connection.player.name:lower() and colours.white or colours.lightGrey)
+end
+
 function game.loadMap(rooms)
     game.rooms = rooms
 end
@@ -639,7 +720,8 @@ game.events = {
     join = game.join,
     quit = game.quit,
     move = game.move,
-    serverMessage = game.serverMessage
+    serverMessage = game.serverMessage,
+    chat = game.chat
 }
 
 return game

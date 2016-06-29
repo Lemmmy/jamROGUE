@@ -111,6 +111,13 @@ class Room {
 		this.width += by * 2;
 		this.height += by * 2;
 	}
+
+	shrink(by) {
+		this.x += by;
+		this.y += by;
+		this.width -= by * 2;
+		this.height -= by * 2;
+	}
 }
 
 function poop(a, b) {
@@ -249,6 +256,12 @@ DungeonGenerator.generate = () => {
 				}
 			}
 		}
+
+		rooms.filter(a => {
+			return a.type !== "hall";
+		}).forEach(hall => {
+			hall.shrink(1);
+		});
 
 		{
 			let dx, dy, x, y;

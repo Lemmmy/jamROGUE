@@ -25,7 +25,19 @@ let DB = {
 					visitedRooms: Array,
 					items: Array,
 					money: Number,
-					xp: Number
+					xp: Number,
+					level: {
+						type: Number,
+						default: 1
+					},
+					health: {
+						type: Number,
+						default: 5
+					},
+					created: {
+						type: Date,
+						default: Date.now
+					}
 				});
 
 				userSchema.set("toJSON", {

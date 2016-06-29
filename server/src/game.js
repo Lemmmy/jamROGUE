@@ -188,6 +188,22 @@ let Game = {
 				room.x + room.width >= x &&
 				room.y <= y &&
 				room.y + room.height >= y);
+	},
+
+	playerDistanceSq(a, b) {
+		return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+	},
+
+	playerDistance(a, b) {
+		return Math.sqrt(playerDistanceSq(a, b));
+	},
+
+	playersNear(player, distance) {
+		let d = distance * distance;
+
+		return _.filter(_.without(Game.players, player), p => {
+			return Game.playerDistanceSq(player, p) <= d;
+		});
 	}
 };
 
