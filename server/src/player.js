@@ -1,14 +1,16 @@
 import DB from "./db";
+import CCColours from "./colours.js";
+
 import _ from "lodash";
 
 class Player {
-	constructor(game, name, token, id) {
+	constructor(game, name, token, user) {
 		this.Game = game;
 
 		this.name = name;
 		this.token = token;
 
-		this.id = id;
+		this.user = user;
 
 		this.buffer = [];
 
@@ -20,28 +22,35 @@ class Player {
 		this.room = 0;
 		this.x = 0;
 		this.y = 0;
+		this.visitedRooms = [];
 
 		setTimeout(this.ping.bind(this), 1000);
 
-		let self = this;
+		if (user.dungeonID && user.dungeonID == this.Game.dungeonID) {
+			this.visitedRooms = user.visitedRooms;
+			this.room = user.room;
+			this.x = user.x;
+			this.y = user.y;
+		} else {
+			this.room = this.Game.spawnRoom;
+			this.x = this.Game.rooms[this.Game.spawnRoom].x + this.Game.rooms[this.Game.spawnRoom].spawnX;
+			this.y = this.Game.rooms[this.Game.spawnRoom].y + this.Game.rooms[this.Game.spawnRoom].spawnY;
 
-		DB.models.User.findById(this.id).then(user => {
-			if (user.dungeonID && user.dungeonID == self.Game.dungeonID) {
-				self.room = user.room;
-				self.x = user.x;
-				self.y = user.y;
-			} else {
-				self.room = self.Game.spawnRoom;
-				self.x = self.Game.rooms[self.Game.spawnRoom].x + self.Game.rooms[self.Game.spawnRoom].spawnX;
-				self.y = self.Game.rooms[self.Game.spawnRoom].y + self.Game.rooms[self.Game.spawnRoom].spawnY;
-			}
+			this.user.room = this.room;
+			this.user.x = this.x;
+			this.user.y = this.y;
+			this.user.dungeonID = this.Game.dungeonID;
 
-			self.Game.broadcastToAllBut(self.name, "join", self.toJSON());
-			self.addEvent("spawn", { player: self.toJSON(), players: _.map(self.Game.players, player => { return player.toJSON(); }) });
-			self.addEvent("room", self.Game.roomToJSON(self.Game.rooms[self.room]));
+			this.user.save();
 
-			console.log(`Player ${self.name} connected`);
-		});
+			this.addEvent("serverMessage", { text: "Welcome to a new dungeon.", colour: CCColours.lightBlue});
+		}
+
+		this.Game.broadcastToAllBut(this.name, "join", this.toJSON());
+		this.addEvent("spawn", { player: this.toJSON(), players: _.map(this.Game.players, player => { return player.toJSON(); }) });
+		this.addEvent("room", this.Game.roomToJSON(this.Game.rooms[this.room]));
+
+		console.log(`Player ${this.name} connected`);
 	}
 
 	disconnect(reason) {
@@ -52,7 +61,8 @@ class Player {
 		this.Game.players.splice(this.Game.players.indexOf(this), 1);
 
 		this.Game.broadcast("quit", {
-			name: this.name
+			name: this.name,
+			reason: this.reason
 		});
 		this.Game.broadcast("online_users", this.Game.players.length);
 	}
@@ -116,6 +126,13 @@ class Player {
 			self.disconnectedTime = new Date();
 		});
 
+		setTimeout((() => {
+			if (this.req != req) return;
+
+			this.addEvent("pong", new Date().getTime());
+			this.notify();
+		}).bind(this), 15000);
+
 		req.pause();
 
 		this.connected = true;
@@ -163,7 +180,11 @@ class Player {
 			this.notify();
 		}
 
-		DB.models.User.findByIdAndUpdate(this.id, { x: this.x, y: this.y, room: this.room });
+		this.user.x = this.x;
+		this.user.y = this.y;
+		this.user.room = this.room;
+
+		this.user.save();
 	}
 }
 

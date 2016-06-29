@@ -13,8 +13,6 @@ function login.init(main)
     login.flashPassword = false
     login.focusedItem = 0
     login.errorText = ""
-    login.checkingText = ""
-    login.checkingColour = colours.grey
     login.latestLoginURL = ""
 end
 
@@ -59,12 +57,12 @@ end
 
 function login.draw()
     buffer.setBackgroundColour(colours.black)
-    buffer.setTextColour(colours.grey)
+    buffer.setTextColour(colours.blue)
     buffer.setCursorPos(1, 1)
     buffer.write(("\127"):rep(w))
     buffer.setCursorPos(1, 3)
     buffer.write(("\127"):rep(w))
-    buffer.setBackgroundColour(colours.lightGrey)
+    buffer.setBackgroundColour(colours.blue)
     buffer.setTextColour(colours.white)
     buffer.setCursorPos(1, 2)
     buffer.write((" "):rep(w))

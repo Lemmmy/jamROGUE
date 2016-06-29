@@ -1,6 +1,8 @@
 import mongoose, {Schema} from "mongoose";
 import Promise from "bluebird";
 
+import _ from "lodash";
+
 let DB = {
 	models: {},
 
@@ -16,14 +18,14 @@ let DB = {
 				let userSchema = mongoose.Schema({
 					name: String,
 					password: String,
-					dungeonID: Number,
+					dungeonID: String,
 					room: Number,
 					x: Number,
 					y: Number,
 					visitedRooms: Array,
 					items: Array,
 					money: Number,
-					xp: Number,
+					xp: Number
 				});
 
 				userSchema.set("toJSON", {

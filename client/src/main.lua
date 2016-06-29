@@ -7,7 +7,9 @@ main.states = {
     menu = require("src/states/state_menu.lua"),
     login = require("src/states/state_login.lua"),
     register = require("src/states/state_register.lua"),
-    game = require("src/states/state_game.lua")
+    game = require("src/states/state_game.lua"),
+    error = require("src/states/state_error.lua"),
+    controls = require("src/states/state_controls.lua")
 }
 
 main.state = "menu"
@@ -26,7 +28,7 @@ function main.changeState(dest)
     end
 end
 
-main.changeState("login")
+main.changeState("menu")
 
 require("src/loop.lua")(main)
 

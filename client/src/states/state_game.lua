@@ -28,6 +28,7 @@ function game.init(main)
     game.logWindow = framebuffer.new(w - 20, 4, true, 0, h - 4)
     game.logScrollPos = 1
 
+    game.failedPolls = 0
     game.lastPollTime = os.clock()
     http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     http.request(constants.server .. "map.json")
@@ -44,12 +45,14 @@ function game.init(main)
     game.movingDown = false
 
     game.typingMessage = false
+
 end
 
-function game.print(text)
+function game.print(text, colour)
     game.log[#game.log + 1] = {
         text = text,
-        time = os.clock()
+        time = os.clock(),
+        colour = colour
     }
 
     if #game.log > 20 then
@@ -61,16 +64,34 @@ function game.httpSuccess(url, response)
     if url == constants.server .. "game/poll" then
         local resp = json.decode(response.readAll())
 
-        if resp.ok and resp.events then
-            for _, event in ipairs(resp.events) do
-                if game.events and game.events[event.type] then
-                    game.events[event.type](event.data)
+        if resp.ok then
+            game.failedPolls = 0
+
+            if resp.events then
+                for _, event in ipairs(resp.events) do
+                    if game.events and game.events[event.type] then
+                        game.events[event.type](event.data)
+                    end
                 end
             end
-        end
 
-        game.lastPollTime = os.clock()
-        http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
+            game.lastPollTime = os.clock()
+            http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
+        else
+            if resp.error == "invalid_token" then
+                game.main.error = "Invalid token (server restarted?)"
+                game.main.changeState("error")
+
+                return
+            end
+
+            game.failedPolls = game.failedPolls + 1
+
+            if game.failedPolls >= 5 then
+                game.main.error = "Lost connection to server."
+                game.main.changeState("error")
+            end
+        end
     elseif url == constants.server .. "map.json" then
         game.loadMap(json.decode(response.readAll()).rooms)
     end
@@ -78,6 +99,18 @@ end
 
 function game.httpFailure(url)
     if url == constants.server .. "game/poll" then
+        if os.clock() - game.lastPollTime < 2.0 then
+            game.failedPolls = game.failedPolls + 1
+            game.print("Server connection seems to be unstable (" .. game.failedPolls .. " attempts)", colours.yellow)
+
+            if game.failedPolls >= 5 then
+                game.main.error = "Lost connection to server."
+                game.main.changeState("error")
+
+                return
+            end
+        end
+
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
@@ -187,15 +220,17 @@ function game.drawLog()
     term.clear()
     term.setCursorPos(1, 1)
 
+
     for _, v in ipairs(game.log) do
+        term.setTextColour(v.colour or colours.white)
         print(v.text)
     end
-
-    term.redirect(current)
 
     term.redirect(buffer)
     framebuffer.draw(game.logWindow.buffer)
     term.redirect(current)
+
+    buffer.setTextColour(colours.white)
 end
 
 local function worldToViewportPos(x, y)
@@ -231,6 +266,8 @@ function game.drawGame()
 end
 
 function game.drawWindowBorder()
+    buffer.setTextColour(colours.white)
+
     buffer.setCursorPos(1, 1)
     buffer.write("\7")
     buffer.write(("\45"):rep(w - 22))
@@ -307,8 +344,8 @@ function game.drawRooms()
                     worldBottom  >= room.y then
                     local roomStartX, roomStartY = worldToViewportPos(room.x, room.y)
 
-                    local colour = colours.lightGrey
-                    local colourHex = "8"
+                    local colour = room.type == "hub" and (room.subType == "spawn" and colours.green or colours.red) or colours.lightGrey
+                    local colourHex = room.type == "hub" and (room.subType == "spawn" and "d" or "e") or "8"
 
                     viewportSetBackgroundColour(colours.black)
                     viewportSetTextColour(colour)
@@ -331,7 +368,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width and room.y >= hall.y and room.y ~= hall.y then
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y >= hall.y and room.y ~= hall.y then
                                         stop = true
                                     end
                                 end
@@ -350,7 +387,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width and room.y + roomHeight <= hall.y + hall.height then
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y + roomHeight <= hall.y + hall.height then
                                         stop = true
                                     end
                                 end
@@ -361,7 +398,6 @@ function game.drawRooms()
                                 viewportWrite(" ")
                             end
                         end
-                        viewportSetBackgroundColour(colour)
                     end
 
                     for y = 0, roomHeight do
@@ -501,7 +537,7 @@ function game.keyUp(key)
 end
 
 function game.update()
-    if os.clock() - game.lastPollTime > 21.25 then
+    if os.clock() - game.lastPollTime > 25 then
         game.lastPollTime = os.clock()
         http.request(constants.server .. "game/poll", "token=" .. textutils.urlEncode(game.main.connection.token))
     end
@@ -588,6 +624,10 @@ function game.move(data)
     end
 end
 
+function game.serverMessage(data)
+    game.print(data.text, data.colour or colours.white)
+end
+
 function game.loadMap(rooms)
     game.rooms = rooms
 end
@@ -597,7 +637,9 @@ game.events = {
     spawn = game.spawn,
     room = game.room,
     join = game.join,
-    move = game.move
+    quit = game.quit,
+    move = game.move,
+    serverMessage = game.serverMessage
 }
 
 return game
