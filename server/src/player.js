@@ -466,6 +466,9 @@ class Player {
 			this.xp += xp;
 		}
 
+		this.user.xp = this.xp;
+		this.user.save();
+
 		this.addEvent("xp", {
 			xp: this.xp,
 			level: this.level,

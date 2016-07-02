@@ -262,9 +262,9 @@ let Game = {
 					return reject("incorrect_login");
 				}
 
-				console.log(`Player ${user.name} connecting`);
-
 				let token = hat();
+				console.log(`Player ${user.name} connecting with ${token}`);
+
 				let player = new Player(Game, user.name, token, user);
 				player.room = Game.spawnRoom;
 				player.x = Game.rooms[Game.spawnRoom].x + Game.rooms[Game.spawnRoom].spawnX;

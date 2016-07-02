@@ -142,11 +142,15 @@ class Item {
 	}
 
 	serialize() {
+		if (!this.item) {
+			return {};
+		}
+
 		return {
 			type: this.type,
 			rarity: this.rarity ? this.rarity.name : null,
-			name: this.item.name,
-			fullName: this.rarity ? this.rarity.name + " " + this.item.name : this.item.name,
+			name: this.item.name || "Invalid Item",
+			fullName: this.rarity ? this.rarity.name + " " + (this.item.name || "Invalid Item") : (this.item.name || "Invalid Item"),
 			maxStack: this.item.stack || 1,
 			colour: this.rarity ? this.rarity.colour : CCColours.white,
 			subType: this.item.subType,
@@ -161,6 +165,10 @@ class Item {
 	}
 
 	static fromJSON(json) {
+		if (!json.name) {
+			return null;
+		}
+
 		let item = _.find(items[json.type], i => { return i.name.toLowerCase() === json.name.toLowerCase(); });
 		let rarity = json.rarity ? _.find(rarities, i => { return i.name.toLowerCase() === json.rarity.toLowerCase(); }) : null;
 

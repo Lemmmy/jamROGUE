@@ -129,8 +129,8 @@ class EntityMob extends Entity {
 				}
 			}
 
-			_.forOwn(Item.getItems(), type => {
-				let poop = _.find(type, i => {
+			_.forOwn(Item.getItems(), (val, type) => {
+				let poop = _.find(val, i => {
 					return i.name.toLowerCase() === key.toLowerCase();
 				});
 
@@ -138,7 +138,7 @@ class EntityMob extends Entity {
 					let count = _.random(value.min || 1, value.max || 1);
 
 					for (let i = 0; i < count; i++) {
-						items.push(new Item(poop, poop.type, null, value.rarity ? Item.randomRarity(poop.type, killer.level) : null));
+						items.push(new Item(poop, type, null, value.rarity ? Item.randomRarity(type, killer.level) : null));
 					}
 				}
 			});
@@ -219,7 +219,7 @@ class EntityMob extends Entity {
 				}
 
 				player.addEvent("server_message", {
-					text: `&eYou swing ${itemName}&e at the ${this.name}.`,
+					text: `&3You swing ${itemName}&3 at the ${this.name}.`,
 					fancy: true
 				});
 
