@@ -1,37 +1,35 @@
 import EntityMob from "./entity_mob";
 
-class EntityRat extends EntityMob {
+class EntityGoblin extends EntityMob {
 	constructor(game, room, x, y) {
 		super(game, room, x, y);
 
 		this.damage = 1;
-		this.critChance = 0;
-		this.critMultiplier = 1;
+		this.critChance = 0.25;
+		this.critMultiplier = 2;
 		this.damageTick = 15;
 
-		this.health = 2;
+		this.health = 5;
 
-		this.name = "Rat";
+		this.name = "Goblin";
 		this.n = "";
 
 		this.drops = {
-			"Poop": {
-				chance: 1,
-				min: 1,
-				max: 3
+			"melee": {
+				chance: 0.4
 			},
 			"throwable": {
-				chance: 0.2
+				chance: 0.1
 			},
 			"projectile": {
-				chance: 0.2
+				chance: 0.6
 			}
 		};
 	}
 
 	getMobType() {
-		return "rat";
+		return "goblin";
 	}
 }
 
-export default EntityRat;
+export default EntityGoblin;
