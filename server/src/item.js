@@ -23,6 +23,36 @@ let items = {
 			description: "It's a{n} {name} but do we even have trees down here?",
 			damage: 1,
 			minLevel: 0
+		},
+		{
+			name: "Branch",
+			description: "It's a{n} {name} - is this really any better than a stick?",
+			damage: 2,
+			minLevel: 2
+		},
+		{
+			name: "Knife",
+			description: "Equally useful in the kitchen and the dungeon.",
+			damage: 3,
+			minLevel: 5
+		},
+		{
+			name: "Sword",
+			description: "It's a{n} {name}, looks sturdy.",
+			damage: 3,
+			minLevel: 5
+		},
+		{
+			name: "Shortsword",
+			description: "It's a{n} {name}, short and swift.",
+			damage: 4,
+			minLevel: 10
+		},
+		{
+			name: "Longsword",
+			description: "It's a{n} {name}.",
+			damage: 5,
+			minLevel: 13
 		}
 	],
 	"throwable": [
@@ -33,6 +63,30 @@ let items = {
 			minLevel: 0,
 			stack: 8,
 			range: 6
+		},
+		{
+			name: "Brick",
+			description: "Just a brick.",
+			damage: 1,
+			minLevel: 0,
+			stack: 10,
+			range: 5
+		},
+		{
+			name: "Can",
+			description: "Just a can.",
+			damage: 1,
+			minLevel: 0,
+			stack: 20,
+			range: 10
+		},
+		{
+			name: "Boulder",
+			description: "How do you carry this?",
+			damage: 5,
+			minLevel: 10,
+			stack: 3,
+			range: 6
 		}
 	],
 	"shooter": [
@@ -41,6 +95,34 @@ let items = {
 			description: "It's a{n} {name} - looks like it requires pebbles.",
 			range: 8,
 			projectiles: ["Pebble"]
+		},
+		{
+			name: "Flimsy Bow",
+			description: "It's a{n} {name}.",
+			range: 12,
+			projectiles: ["Arrow"],
+			minLevel: 2
+		},
+		{
+			name: "Bow",
+			description: "It's a{n} {name}.",
+			range: 15,
+			projectiles: ["Arrow"],
+			minLevel: 5
+		},
+		{
+			name: "Strong Bow",
+			description: "It's a{n} {name}.",
+			range: 18,
+			projectiles: ["Arrow"],
+			minLevel: 10
+		},
+		{
+			name: "Crossbow",
+			description: "It's a{n} {name}.",
+			range: 20,
+			projectiles: ["Arrow"],
+			minLevel: 12
 		}
 	],
 	"projectile": [
@@ -50,6 +132,20 @@ let items = {
 			minLevel: 0,
 			damage: 1,
 			stack: 30
+		},
+		{
+			name: "Arrow",
+			description: "Sharp and pointy.",
+			minLevel: 2,
+			damage: 2,
+			stack: 30
+		},
+		{
+			name: "Venom Arrow",
+			description: "Sharp, pointy and venomous.",
+			minLevel: 6,
+			damage: 4,
+			stack: 30
 		}
 	],
 	"consumable": [
@@ -58,7 +154,7 @@ let items = {
 			description: "An apple a day keeps the doctor away.",
 			minLevel: 0,
 			heal: 2,
-			stack: 4,
+			stack: 6,
 			subType: "healing"
 		},
 		{
@@ -75,6 +171,35 @@ let items = {
 			minLevel: 0,
 			heal: 1,
 			stack: 15,
+			subType: "healing"
+		},
+		{
+			name: "Pineapple",
+			description: "A pineapple a day keeps the monsters away.",
+			minLevel: 2,
+			heal: 3,
+			stack: 4,
+			subType: "healing"
+		},
+		{
+			name: "Health Potion",
+			description: "Looks suspicious, but it says health on it!",
+			minLevel: 4,
+			heal: 5,
+			subType: "healing"
+		},
+		{
+			name: "Health Vial",
+			description: "Looks suspicious, but it says health on it!",
+			minLevel: 6,
+			heal: 8,
+			subType: "healing"
+		},
+		{
+			name: "Cake",
+			description: "Lucky find.",
+			minLevel: 8,
+			heal: 10,
 			subType: "healing"
 		}
 	],
