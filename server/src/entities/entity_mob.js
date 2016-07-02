@@ -116,7 +116,7 @@ class EntityMob extends Entity {
 	die(killer) {
 		let items = [];
 
-		killer.addXP(1);
+		killer.addXP(this.xpAward || 1);
 
 		_.forOwn(this.drops, (value, key) => {
 			if (_.includes(Item.getTypes(), key)) {
@@ -223,7 +223,7 @@ class EntityMob extends Entity {
 					fancy: true
 				});
 
-				if (this.takeDamage(equippedItem.item.damage, player)) {
+				if (this.takeDamage(Math.ceil(equippedItem.item.damage * (equippedItem.item.rarity ? (equippedItem.item.rarityDamageModifier || equippedItem.item.rarity.damageModifier) : 1)), player)) {
 					player.addEvent("server_message", {
 						text: `You killed the ${this.name}.`,
 						colour: CCColours.lime
@@ -304,7 +304,7 @@ class EntityMob extends Entity {
 					fancy: true
 				});
 
-				if (this.takeDamage(equippedItem.item.damage, player)) {
+				if (this.takeDamage(Math.ceil(equippedItem.item.damage * (equippedItem.item.rarity ? (equippedItem.item.rarityDamageModifier || equippedItem.item.rarity.damageModifier) : 1)), player)) {
 					player.addEvent("server_message", {
 						text: `You killed the ${this.name}.`,
 						colour: CCColours.lime

@@ -25,6 +25,8 @@ class EntityGoblin extends EntityMob {
 				chance: 0.6
 			}
 		};
+
+		this.xpAward = 4;
 	}
 
 	getMobType() {

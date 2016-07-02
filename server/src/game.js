@@ -4,10 +4,14 @@ import DungeonGenerator from "./dungeon";
 
 import Item from "./item";
 import EntityChest from "./entities/entity_chest";
-import EntityDroppedItem from "./entities/entity_dropped_item"
+import EntityDroppedItem from "./entities/entity_dropped_item";
 
 import EntityRat from "./entities/entity_rat";
 import EntityBat from "./entities/entity_bat";
+import EntityGoblin from "./entities/entity_goblin";
+import EntityDwarf from "./entities/entity_dwarf";
+import EntityLizard from "./entities/entity_lizard";
+import EntitySerpent from "./entities/entity_serpent";
 
 import fs from "fs";
 import hat from "hat";
@@ -89,7 +93,7 @@ let Game = {
 						switch(room.subType) {
 							case "camp":
 								room.name = _.sample(["Monster Camp", "Camp", "Small Camp"]);
-								Game.fillRoomWithMobs(room, 1, 2, _.sample([EntityRat]));
+								Game.fillRoomWithMobs(room, 1, 2, _.sample([EntityGoblin]));
 								break;
 							case "empty":
 								room.name = _.sample(["Empty Room", "Abandoned Room"]);
@@ -136,10 +140,12 @@ let Game = {
 								break;
 							case "camp":
 								room.name = _.sample(["Monster Camp", "Camp", "Large Camp"]);
+								Game.fillRoomWithMobs(room, 2, 6, _.sample([EntityGoblin, EntityDwarf]));
 								break;
 							case "boss":
 								room.name = _.sample(["Boss", "Lair"]);
 								Game.fillRoomWithChests(room, 1, 3, 0.9);
+								Game.fillRoomWithMobs(room, 2, 3, _.sample([EntityLizard, EntitySerpent]));
 								break;
 						}
 					}

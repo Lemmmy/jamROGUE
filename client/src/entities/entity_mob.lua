@@ -37,6 +37,14 @@ function EntityMob:getSymbol()
         return math.floor(os.clock()) % 2 == 0 and "^" or "v"
     elseif self.type == "rat" then
         return "~"
+    elseif self.type == "goblin" then
+        return "\5"
+    elseif self.type == "dwarf" then
+        return "\6"
+    elseif self.type == "lizard" then
+        return "Y"
+    elseif self.type == "serpent" then
+        return "\36"
     end
 
     return "\164"
@@ -47,6 +55,14 @@ function EntityMob:getColour()
         return colours.brown
     elseif self.type == "rat" then
         return colours.brown
+    elseif self.type == "goblin" then
+        return colours.green
+    elseif self.type == "dwarf" then
+        return colours.orange
+    elseif self.type == "lizard" then
+        return colours.orange
+    elseif self.type == "serpent" then
+        return colours.green
     end
 
     return colours.red

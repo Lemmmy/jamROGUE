@@ -22,6 +22,8 @@ class EntityBat extends EntityMob {
 				chance: 0.2
 			}
 		};
+
+		this.xpAward = 2;
 	}
 
 	getMobType() {

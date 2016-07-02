@@ -18,4 +18,4 @@ DB.init(config).then(() => {
 			console.log("ready");
 		});
 	});
-})
+});
