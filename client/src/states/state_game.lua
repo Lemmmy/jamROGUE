@@ -190,7 +190,7 @@ function game.drawSidebar()
 
     buffer.setBackgroundColour(colours.lightGrey)
     buffer.setCursorPos(w - 18, 3)
-    buffer.write("Info")
+    buffer.write(game.sidebarScreen == 0 and "Info" or "Menu")
     buffer.setCursorPos(w, 3)
     buffer.write(game.sidebarMenuShowing and "\30" or "\31")
 
@@ -825,6 +825,10 @@ function game.key(key)
             game.typingMessage = false
             game.typing = ""
         end
+    else
+        if key == "enter" then
+            game.typingMessage = true
+        end
     end
 end
 
@@ -1004,7 +1008,7 @@ end
 
 function game.playerDied(data)
     for _, player in ipairs(game.main.connection.players) do
-        if player.name:lower() == data.player:lower() then
+        if player.name:lower() == data.name:lower() then
             player.alive = false
         end
     end

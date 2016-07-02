@@ -116,6 +116,8 @@ class EntityMob extends Entity {
 	die(killer) {
 		let items = [];
 
+		killer.addXP(1);
+
 		_.forOwn(this.drops, (value, key) => {
 			if (_.includes(Item.getTypes(), key)) {
 				if (Math.random() <= value.chance) {

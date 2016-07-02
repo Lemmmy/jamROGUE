@@ -8,7 +8,7 @@ let imageHeight = 1500;
 let rooms = [];
 
 let tileSize = 4;
-let roomCount = 300;
+let roomCount = 1200;
 
 let minRoomWidth = 8;
 let maxRoomWidth = 28;
@@ -20,8 +20,8 @@ let hubRatio = 1.175;
 
 let padding = 1;
 
-let ellipseWidth = 90;
-let ellipseHeight = 50;
+let ellipseWidth = 900;
+let ellipseHeight = 500;
 
 function roundm(n, m) {
 	return Math.floor(((n + m - 1) / m)) * m;
