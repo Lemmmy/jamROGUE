@@ -5,7 +5,7 @@ end
 local workingDir = fs.getDir(shell.getRunningProgram())
 
 function resolveFile(file)
-    return fs.combine(workingDir, file)
+    return shell.resolve(file)
 end
 
 local requireCache = {}
@@ -24,10 +24,10 @@ function require(file)
 
         setmetatable(env, { __index = _G })
 
-        local chunk, err = loadfile(file, env)
+        local chunk, err = loadfile(shell.resolve(file), env)
 
         if chunk == nil then
-            return error(err or "N/A", 0)
+            return error("Error loading file " .. shell.resolve(file) .. ":\n" .. (err or "N/A"), 0)
         end
 
         requireCache[path] = chunk()
@@ -46,8 +46,5 @@ end
 if not framebuffer then
     os.loadAPI(resolveFile("lib/framebuffer"))
 end
-
-local a = blittle.shrink(paintutils.loadImage(resolveFile("assets/logo")))
-blittle.save(a, "assets/logo_little")
 
 local main = require("src/main.lua")
