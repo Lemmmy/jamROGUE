@@ -28,7 +28,7 @@ class EntityChest extends Entity {
 			let key;
 
 			if (this.locked) {
-				key = _.find(player.inventory, i => { return i.subType && i.subType === "chest_key"; });
+				key = _.find(player.inventory, i => { return i.item instanceof Item ? (i.item.serialize().subType && i.item.serialize().subType === "chest_key") : i.item.subType === "chest_key"; });
 			}
 
 			if ((this.locked && key) || !this.locked) {
@@ -51,13 +51,13 @@ class EntityChest extends Entity {
 
 					player.addEvent("server_message", {
 						fancy: true,
-						text: "You picked up " + ("a" + (item.rarity ? (/^[aeiou]/i.test(item.rarity.name) ? "n" : "") : (/^[aeiou]/i.test(item.item.name) ? "n" : ""))) + " &" + CCColours.colourToHex(item.rarity ? item.rarity.colour : CCColours.white) + (item.rarity ? item.rarity.name + " " : "") + item.item.name + "&0" + "."
+						text: "You found " + ("a" + (item.rarity ? (/^[aeiou]/i.test(item.rarity.name) ? "n" : "") : (/^[aeiou]/i.test(item.item.name) ? "n" : ""))) + " &" + CCColours.colourToHex(item.rarity ? item.rarity.colour : CCColours.white) + (item.rarity ? item.rarity.name + " " : "") + item.item.name + "&0" + "."
 					});
 
 					player.updateInventory();
 					player.saveInventory();
 				} else {
-					this.addEvent("server_message", { text: "You don't have room for that. ", colour: CCColours.red });
+					player.addEvent("server_message", { text: "You don't have room for that. ", colour: CCColours.red });
 				}
 			} else {
 				player.addEvent("server_message", { text: "It's locked - you need a key for this.", colour: CCColours.red });

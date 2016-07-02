@@ -3,6 +3,7 @@ local constants = require("src/constants.lua")
 local Player = require("src/entities/entity_player.lua")
 local EntityDroppedItem = require("src/entities/entity_dropped_item.lua")
 local EntityChest = require("src/entities/entity_chest.lua")
+local EntityMob = require("src/entities/entity_mob.lua")
 
 local w, h = term.getSize()
 
@@ -214,6 +215,22 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
+    if game.main.connection.player and not game.main.connection.player.alive then
+        buffer.setBackgroundColour(colours.blue)
+        buffer.setTextColour(colours.white)
+        buffer.setCursorPos(w - 18, h - 1)
+        buffer.write((" "):rep(18))
+        buffer.setCursorPos(w - 17 + ((17 - #"Respawn") / 2), h - 1)
+        buffer.write("Respawn")
+        buffer.setBackgroundColour(colours.grey)
+        buffer.setTextColour(colours.blue)
+        buffer.setCursorPos(w, h - 1)
+        buffer.write("\149")
+        buffer.setTextColour(colours.white)
+
+        return
+    end
+
     local level = game.main.connection.player and game.main.connection.player.level or 1
 
     local maxHealth = game.main.connection.player and level + 4 or 1
@@ -365,7 +382,7 @@ function game.drawLog()
 end
 
 local function worldToViewportPos(x, y)
-    return x - game.viewportCenterX + game.viewportWidth / 2 + 1, y - game.viewportCenterY + game.viewportHeight / 2 + 1
+    return (x or 0) - game.viewportCenterX + game.viewportWidth / 2 + 1, (y or 0) - game.viewportCenterY + game.viewportHeight / 2 + 1
 end
 
 local function viewportToWorldPos(x, y)
@@ -415,14 +432,24 @@ function game.drawWindowBorder()
         buffer.write("\124")
     end
 
-    if game.main.connection.room and game.main.connection.room.name then
-        local a = "[ " .. (" "):rep(#game.main.connection.room.name) .. " ]"
+    if game.main.connection.player and not game.main.connection.player.alive then
+        local a = "[ " .. (" "):rep(#"DEAD") .. " ]"
         buffer.setCursorPos(((w - 17) - #a) / 2, 1)
         buffer.write(a)
 
-        buffer.setTextColour(colours.lightBlue)
+        buffer.setTextColour(colours.red)
         buffer.setCursorPos(((w - 17) - #a) / 2 + 2, 1)
-        buffer.write(game.main.connection.room.name)
+        buffer.write("DEAD")
+    else
+        if game.main.connection.room and game.main.connection.room.name then
+            local a = "[ " .. (" "):rep(#game.main.connection.room.name) .. " ]"
+            buffer.setCursorPos(((w - 17) - #a) / 2, 1)
+            buffer.write(a)
+
+            buffer.setTextColour(colours.lightBlue)
+            buffer.setCursorPos(((w - 17) - #a) / 2 + 2, 1)
+            buffer.write(game.main.connection.room.name)
+        end
     end
 
     buffer.setTextColour(colours.white)
@@ -451,6 +478,17 @@ function game.drawRooms()
     local worldBottom = game.worldBottom
     local viewportWidth = game.viewportWidth
     local viewportHeight = game.viewportHeight
+
+    if game.main.connection.player and not game.main.connection.player.alive then
+        viewportSetTextColour(colours.red)
+        for y = 1, viewportHeight do
+            viewportSetCursorPos(1, y)
+            viewportWrite(rep("\127", viewportWidth))
+        end
+        viewportSetTextColour(colours.white)
+
+        return
+    end
 
     viewportSetTextColour(colours.grey)
     for y = 1, viewportHeight do
@@ -579,6 +617,8 @@ function game.drawRooms()
 end
 
 function game.drawEntities()
+    if game.main.connection.player and not game.main.connection.player.alive then return end
+
     game.viewportWindow.setTextColour(colours.white)
     if game.entities then
         for _, v in ipairs(game.entities) do
@@ -648,6 +688,14 @@ function game.mouseClick(button, x, y)
             end
 
             if game.sidebarScreen == 0 then
+                if game.main.connection.player and not game.main.connection.player.alive then
+                    if y == h - 1 then
+                        http.request(constants.server .. "game/respawn", "token=" .. textutils.urlEncode(game.main.connection.token))
+                    end
+
+                    return
+                end
+
                 if game.itemMenuShowing then
                     if x == w then
                         game.itemMenuShowing = false
@@ -699,6 +747,8 @@ function game.mouseClick(button, x, y)
         end
 
         if x > 1 and y > 1 and x < game.viewportWidth + 2 and y < game.viewportHeight + 2 then
+            if game.main.connection.player and not game.main.connection.player.alive then return end
+
             local wx, wy = viewportToWorldPos(x - 1, y - 1)
 
             for _, player in ipairs(game.main.connection.players) do
@@ -722,6 +772,8 @@ function game.mouseClick(button, x, y)
             end
         end
     elseif button == 2 then
+        if game.main.connection.player and not game.main.connection.player.alive then return end
+
         if x >= w - 19 and x <= w then
             if game.sidebarScreen == 0 then
                 if y >= 8 and game.main.connection.player and game.main.connection.player.inventory and game.main.connection.player.inventory[y - 7] then
@@ -816,7 +868,9 @@ function game.update()
 end
 
 function game.updateCent()
+    if not game.rooms then return end
     if game.typingMessage then return end
+    if game.main.connection.player and not game.main.connection.player.alive then return end
 
     local dx = 0
     local dy = 0
@@ -853,7 +907,8 @@ function game.updateCent()
 
             http.request(constants.server .. "game/move",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
                                                             "&x=" .. game.main.connection.player.x ..
-                                                            "&y=" .. game.main.connection.player.y)
+                                                            "&y=" .. game.main.connection.player.y ..
+                                                            "&time=" .. textutils.urlEncode(os.clock()))
         end
     end
 end
@@ -868,6 +923,7 @@ function game.spawn(data)
     game.main.connection.player.level = data.player.level
     game.main.connection.player.xp = data.player.xp
     game.main.connection.player.inventory = data.player.inventory
+    game.main.connection.player.alive = data.player.alive
 
     for _, player in ipairs(data.players) do
         if player.name:lower() ~= data.player.name:lower() then
@@ -937,6 +993,34 @@ function game.chat(data)
     game.print("<" .. data.from .. "> " .. data.message, data.from:lower() == game.main.connection.player.name:lower() and colours.white or colours.lightGrey)
 end
 
+function game.damage(data)
+    game.main.connection.player.health = data.health
+end
+
+function game.dead(data)
+    game.print("You died.", colours.red)
+    game.main.connection.player.alive = false
+end
+
+function game.playerDied(data)
+    for _, player in ipairs(game.main.connection.players) do
+        if player.name:lower() == data.player:lower() then
+            player.alive = false
+        end
+    end
+end
+
+function game.xp(data)
+    if game.main.connection.player then
+        game.main.connection.player.xp = data.xp
+        game.main.connection.player.level = data.level
+
+        if data.oldLevel ~= data.level then
+            game.printFancy("&1You levelled up! You are now level &5" .. data.level .. "&1.")
+        end
+    end
+end
+
 function game.updateInventory(data)
     game.main.connection.player.inventory = data
 end
@@ -954,11 +1038,24 @@ function game.removeEntity(data)
     end
 end
 
+function game.moveEntity(data)
+    for i, v in ipairs(game.entities) do
+        if v.id == data.id then
+            v.x = data.x;
+            v.y = data.y;
+            v.room = data.room;
+            return
+        end
+    end
+end
+
 function game.loadEntity(entity)
     if entity.type == "DroppedItem" then
         table.insert(game.entities, EntityDroppedItem(entity.id, entity.x, entity.y, entity.item))
     elseif entity.type == "Chest" then
         table.insert(game.entities, EntityChest(entity.id, entity.x, entity.y, entity.locked))
+    elseif entity.type == "BaseMob" then
+        table.insert(game.entities, EntityMob(entity.id, entity.x, entity.y, entity.mob_type))
     end
 end
 
@@ -983,7 +1080,12 @@ game.events = {
     chat = game.chat,
     inventory = game.updateInventory,
     entity_spawn = game.spawnEntity,
-    entity_remove = game.removeEntity
+    entity_remove = game.removeEntity,
+    entity_move = game.moveEntity,
+    damage = game.damage,
+    dead = game.dead,
+    player_died = game.playerDied,
+    xp = game.xp
 }
 
 return game

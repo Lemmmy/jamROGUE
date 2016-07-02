@@ -1,7 +1,3 @@
-import fs from "fs";
-import gm from "gm";
-import util from "util";
-import now from "performance-now";
 import _ from "lodash";
 
 let DungeonGenerator = {};
@@ -9,12 +5,10 @@ let DungeonGenerator = {};
 let imageWidth = 1500;
 let imageHeight = 1500;
 
-let g = gm(imageWidth, imageHeight, "white");
-
 let rooms = [];
 
 let tileSize = 4;
-let roomCount = 750;
+let roomCount = 300;
 
 let minRoomWidth = 8;
 let maxRoomWidth = 28;
@@ -22,12 +16,12 @@ let maxRoomWidth = 28;
 let minRoomHeight = 8;
 let maxRoomHeight = 24;
 
-let hubRatio = 1.2;
+let hubRatio = 1.175;
 
 let padding = 1;
 
-let ellipseWidth = 500;
-let ellipseHeight = 500;
+let ellipseWidth = 90;
+let ellipseHeight = 50;
 
 function roundm(n, m) {
 	return Math.floor(((n + m - 1) / m)) * m;
@@ -375,8 +369,6 @@ DungeonGenerator.generate = () => {
 			room.shift(-minX, -minY);
 		});
 
-		var end = now();
-
 		let outRooms = [];
 
 		rooms.forEach(room => {
@@ -395,7 +387,7 @@ DungeonGenerator.generate = () => {
 		});
 
 		outRooms = _.sortBy(outRooms, o => { return o.type === "hall" ? 0 : o.type === "regular" ? 1 : 2; });
-		outRooms = _.map(outRooms, (room, id) => { room.id = id; room.name = "Room #" + id; return room; });
+		outRooms = _.map(outRooms, (room, id) => { room.id = id; room.name = (room.type === "hall" ? "" : ("Room #" + id)); return room; });
 
 		outRooms.forEach(a => {
 			a.touching = [];
@@ -422,62 +414,19 @@ DungeonGenerator.generate = () => {
 			});
 		});
 
-		outRooms.forEach(room => {
-			let alpha = room.type === "hub" ? "88" : room.type === "hall" ? "33" : "aa";
-			g.fill((room.type === "hub" ? "#ff0000" : room.type === "hall" ? "#00ff00" : "#0000ff") + alpha);
-
-			let x = (Math.floor(imageWidth - (maxX + Math.abs(minX))) / 2) + room.x;
-			let y = (Math.floor(imageHeight - (maxY + Math.abs(minY))) / 2) + room.y;
-
-			g.drawRectangle(Math.floor(Math.max(x, 0)), Math.floor(Math.max(y, 0)), Math.floor(Math.min(x + room.width)), Math.floor(Math.min(y + room.height)));
-		});
-
-		/*g.fill("transparent").stroke("#00000088", 1);
-
-		rooms.filter(room => {
-			return room.type === "hub"
-		}).forEach(room => {
-			if (room.touching) {
-				let x0 = (512 - (maxX + Math.abs(minX))) / 2 + room.getCenterX();
-				let y0 = (512 - (maxY + Math.abs(minY))) / 2 + room.getCenterY();
-
-				room.touching.forEach(rid => {
-					let room2 = rooms.filter(a => {
-						return a.id === rid
-					})[0];
-
-					let x1 = (512 - (maxX + Math.abs(minX))) / 2 + room2.getCenterX();
-					let y1 = (512 - (maxY + Math.abs(minY))) / 2 + room2.getCenterY();
-
-					g.drawLine(Math.max(x0, 0), Math.max(y0, 0), Math.min(x1, 512), Math.min(y1, 512));
-				});
-			}
-		});
-
-		g.stroke("red", 2).drawLine(256, 256 - 8, 256, 256 + 8).drawLine(256 - 8, 256, 256 + 8, 256)
-
-		g.fill("black").stroke("transparent").fontSize(12).drawText(4, 14,
-			`Rooms: ${roomCount}\n` +
-			`Width mean: ${widthMean}\n` +
-			`Height mean: ${heightMean}\n` +
-			`Min X: ${minX}\n` +
-			`Min Y: ${minY}\n` +
-			`Max X: ${maxX}\n` +
-			`Max Y: ${maxY}\n` +
-			`Shift iterations: ${iteration}\n` +
-			`Time taken: ${(end - start).toFixed(3)} ms`);*/
-
 		console.log(`Generated ${outRooms.length} rooms`);
 
-		g.write("dungeon.png", err => {
-			if (err) {
-				console.error("Pooped the dungeon");
-
-				console.error(err);
+		resolve({
+			rooms: outRooms,
+			svgStuff: {
+				minX: minX,
+				minY: minY,
+				maxX: maxX,
+				maxY: maxY,
+				imageWidth: imageWidth,
+				imageHeight: imageHeight
 			}
 		});
-
-		resolve(outRooms);
 	});
 };
 

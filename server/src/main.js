@@ -6,7 +6,7 @@ import DB from "./db";
 import Server from "./server";
 import Game from "./game";
 
-process.on('uncaughtException', err => {
+process.on("uncaughtException", err => {
 	console.log(err);
 });
 

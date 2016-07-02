@@ -30,6 +30,13 @@ export default app => {
 			});
 		}
 
+		if (!player.alive) {
+			return res.json({
+				ok: false,
+				error: "dead"
+			});
+		}
+
 		let item = parseInt(req.body.item);
 
 		if (item >= player.inventory.length) {

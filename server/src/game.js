@@ -4,11 +4,16 @@ import DungeonGenerator from "./dungeon";
 
 import Item from "./item";
 import EntityChest from "./entities/entity_chest";
-import EntityDroppedItem from "./entities/entity_dropped_item";
+import EntityDroppedItem from "./entities/entity_dropped_item"
 
+import EntityRat from "./entities/entity_rat";
+import EntityBat from "./entities/entity_bat";
+
+import fs from "fs";
 import hat from "hat";
 import bcrypt from "bcrypt-nodejs";
 import Promise from "bluebird";
+import jsdom from "jsdom";
 
 import _ from "lodash";
 
@@ -19,15 +24,18 @@ let Game = {
 	stairRoom: 0,
 	dungeonID: hat(36),
 	entities: [],
+	tickTimer: 0,
+	worldTime: 0,
+	tickRate: 0.1,
 
 	init() {
 		return new Promise(resolve => {
 			Game.players = [];
 
-			DungeonGenerator.generate().then(rooms => {
+			DungeonGenerator.generate().then(result => {
+				console.log("Yes");
+				let rooms = result.rooms;
 				Game.rooms = rooms;
-
-				let bigRooms = Game.rooms.filter(r => { return r.type === "hub"; });
 
 				let spawnRoom;
 
@@ -69,19 +77,25 @@ let Game = {
 				Game.rooms[stairRoom.id].subType = "stair";
 				Game.rooms[stairRoom.id].name = "Stair Room";
 
+				let mapSize = Game.distance(spawnRoom.x + (spawnRoom.width / 2), spawnRoom.y + (spawnRoom.height / 2),
+											stairRoom.x + (stairRoom.width / 2), stairRoom.y + (stairRoom.height / 2));
+
 				Game.rooms = _.map(Game.rooms, room => {
+					room.sleeping = true;
+
 					if (room.type === "regular") {
 						room.subType = _.sample(["camp", "empty", "mobs"]);
 
 						switch(room.subType) {
 							case "camp":
 								room.name = _.sample(["Monster Camp", "Camp", "Small Camp"]);
+								Game.fillRoomWithMobs(room, 1, 2, _.sample([EntityRat]));
 								break;
 							case "empty":
 								room.name = _.sample(["Empty Room", "Abandoned Room"]);
 
-								if (Math.random() >= 0.8) {
-									new EntityDroppedItem(Game, room.id, room.x + (room.width / 2), room.y + (room.height / 2), new Item(null, "misc", "Chest Key")).spawn();
+								if (Math.random() >= 0.65) {
+									new EntityDroppedItem(Game, room.id, Math.floor(room.x + (room.width / 2)), Math.floor(room.y + (room.height / 2)), new Item(null, "misc", "Chest Key")).spawn();
 								}
 
 								var pebbleAmount = _.random (3, 12);
@@ -102,10 +116,18 @@ let Game = {
 							case "mobs":
 								room.name = _.sample(["Monsters", "Sewer", "Mobs", "Dungeon", "Cells"]);
 								Game.fillRoomWithChests(room, 1, 3, 0.2);
+								Game.fillRoomWithMobs(room, 1, 4, _.sample([EntityRat, EntityBat]));
 								break;
 						}
 					} else if (room.type === "hub" && !room.subType || (room.subType && room.subType !== "spawn" && room.subType !== "stair")) {
-						room.subType = _.sample(["loot", "camp", "boss"]);
+						let types = ["loot", "camp"];
+
+						if (Game.distance(  spawnRoom.x + (spawnRoom.width / 2), spawnRoom.y + (spawnRoom.height / 2),
+											room.x + (room.width / 2), room.y + (room.height / 2)) > mapSize / 4) {
+							types.push("boss");
+						}
+
+						room.subType = _.sample(types);
 
 						switch(room.subType) {
 							case "loot":
@@ -125,9 +147,102 @@ let Game = {
 					return room;
 				});
 
-				resolve();
+				console.log("About to generate SVG");
+
+				Game.generateSVG(result.svgStuff).then(svg => {
+					console.log("SVG ready");
+
+					fs.writeFileSync("dungeon.svg", svg);
+
+					console.log("Starting tick timer");
+					Game.tickTimer = setInterval(Game.worldTick, Game.tickRate * 1000);
+
+					resolve();
+				});
 			});
 		});
+	},
+
+	generateSVG(svgStuff) {
+		console.log("Generating SVG");
+
+		return new Promise(resolve => {
+			jsdom.env("<html></html>", [], (err, win) => {
+				if (err) {
+					return console.error(err);
+				}
+
+				console.log("Opened jsdom env");
+
+				global.window = win;
+				global.document = win.document;
+				global.navigator = win.navigator;
+
+				let raphael = require("raphael");
+				raphael.setWindow(win);
+
+				let paper = raphael(0, 0, svgStuff.imageWidth, svgStuff.imageHeight);
+
+				Game.rooms.forEach(room => {
+					let fill = "rgba(125, 125, 125, 0.4)";
+
+					switch (room.type) {
+						case "hub":
+							switch (room.subType) {
+								case "stair":
+									fill = "rgba(255, 0, 0, 1)";
+									break;
+								case "spawn":
+									fill = "rgba(0, 255, 0, 1)";
+									break;
+								case "loot":
+									fill = "rgba(255, 215, 0, 0.6)";
+									break;
+								case "camp":
+									fill = "rgba(106, 90, 205, 0.6)";
+									break;
+								case "boss":
+									fill = "rgba(178, 34, 34, 0.6)";
+									break;
+							}
+							break;
+						case "hall":
+							fill = "rgba(75, 75, 75, 1)";
+							break;
+					}
+
+					let x = (Math.floor(svgStuff.imageWidth - (svgStuff.maxX + Math.abs(svgStuff.minX))) / 2) + room.x;
+					let y = (Math.floor(svgStuff.imageHeight - (svgStuff.maxY + Math.abs(svgStuff.minY))) / 2) + room.y;
+
+					let rect = paper.rect(Math.floor(Math.max(x, 0)), Math.floor(Math.max(y, 0)), Math.floor(room.width), Math.floor(room.height));
+					rect.attr("fill", fill);
+					rect.attr("stroke", "none");
+				});
+
+				let svg = win.document.documentElement.innerHTML.replace("<head></head><body>", "").replace("</body>", "");
+				resolve(svg);
+			});
+		});
+	},
+
+	worldTick() {
+		Game.worldTime += Game.tickRate;
+
+		Game.players.forEach(p => {
+			p.tick(Game.worldTime);
+		});
+
+		let aliveRooms = _.filter(Game.rooms, r => { return !r.sleeping; });
+
+		if (aliveRooms) {
+			let livingEntities = _.filter(Game.entities, e => { return _.find(aliveRooms, r => { return r.id === e.room; }); });
+
+			if (livingEntities) {
+				livingEntities.forEach(e => {
+					e.tick(Game.worldTime);
+				});
+			}
+		}
 	},
 
 	authPlayer(username, password) {
@@ -217,6 +332,14 @@ let Game = {
 				room.y + room.height >= y);
 	},
 
+	distanceSq(ax, ay, bx, by) {
+		return (ax - bx) * (ax - bx) + (ay - by) * (ay - by);
+	},
+
+	distance(ax, ay, bx, by) {
+		return Math.sqrt(Game.distanceSq(ax, ay, bx, by));
+	},
+
 	playerDistanceSq(a, b) {
 		return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 	},
@@ -243,6 +366,7 @@ let Game = {
 
 	fillRoomWithChests(room, min, max, lockedRatio = 0.5) {
 		let amt =  _.random(min, max);
+
 		for (let i = 0; i < amt; i++) {
 			let side = _.random(1, 4);
 
@@ -268,7 +392,15 @@ let Game = {
 					break;
 			}
 
-			new EntityChest(Game, room.id, x, y, Math.random() <= lockedRatio).spawn()
+			new EntityChest(Game, room.id, x, y, Math.random() <= lockedRatio).spawn();
+		}
+	},
+
+	fillRoomWithMobs(room, min, max, cls) {
+		let amt =  _.random(min, max);
+
+		for (let i = 0; i < amt; i++) {
+			new cls(Game, room.id, _.random(room.x + 1, room.x + room.width - 1), _.random(room.y + 1, room.y + room.height - 1)).spawn();
 		}
 	}
 };

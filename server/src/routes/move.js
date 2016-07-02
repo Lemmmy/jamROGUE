@@ -25,10 +25,29 @@ export default app => {
 			});
 		}
 
+		if (req.body.time) {
+			if (player.lastMove > parseFloat(req.body.time)) {
+				return res.json({
+					ok: true,
+					moved: false
+				});
+			}
+
+			player.lastMove = parseFloat(req.body.time);
+		}
+
+		if (!player.alive) {
+			return res.json({
+				ok: false,
+				error: "dead"
+			});
+		}
+
 		player.move(parseInt(req.body.x), parseInt(req.body.y));
 
 		res.json({
-			ok: true
+			ok: true,
+			moved: true
 		});
 	});
 };

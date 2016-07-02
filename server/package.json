@@ -20,10 +20,10 @@
     "body-parser": "^1.15.2",
     "console-stamp": "^0.2.2",
     "express": "^4.14.0",
-    "gm": "^1.22.0",
     "hat": "0.0.3",
+    "jsdom": "^9.3.0",
     "lodash": "^4.13.1",
     "mongoose": "^4.5.2",
-    "performance-now": "^0.2.0"
+    "raphael": "^2.2.0"
   }
 }

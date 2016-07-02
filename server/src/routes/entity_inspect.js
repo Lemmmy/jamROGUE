@@ -20,6 +20,13 @@ export default app => {
 			});
 		}
 
+		if (!player.alive) {
+			return res.json({
+				ok: false,
+				error: "dead"
+			});
+		}
+
 		let entity = _.find(Game.entities, { id: req.params.id });
 
 		if (!entity) {

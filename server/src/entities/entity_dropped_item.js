@@ -12,7 +12,6 @@ class EntityDroppedItem extends Entity {
 	}
 
 	inspectEntity() {
-		console.log(this.item);
 		return this.item ? (this.item instanceof Item ? this.item.serialize().description : this.item.description) : "";
 	}
 
@@ -31,7 +30,7 @@ class EntityDroppedItem extends Entity {
 
 				this.remove();
 			} else {
-				this.addEvent("server_message", { text: "You don't have room for that. ", colour: CCColours.red });
+				player.addEvent("server_message", { text: "You don't have room for that. ", colour: CCColours.red });
 			}
 		} else {
 			player.addEvent("server_message", { text: "You can't " + (this.Game.playerDistancePoint(player, this.x, this.y) < 4 ? "quite " : "") + "reach that.", colour: CCColours.red });

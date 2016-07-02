@@ -1,20 +1,37 @@
-/**
- * Created by Drew Lemmy, 2016
- *
- * This file is part of KristWeb.
- *
- * Krist is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Krist is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Krist. If not, see <http://www.gnu.org/licenses/>.
- *
- * For more project information, see <https://github.com/Lemmmy/KristWeb>.
- */
+import EntityMob from "./entity_mob";
+
+class EntityRat extends EntityMob {
+	constructor(game, room, x, y) {
+		super(game, room, x, y);
+
+		this.damage = 1;
+		this.critChance = 0;
+		this.critMultiplier = 1;
+		this.damageTick = 15;
+
+		this.health = 2;
+
+		this.name = "Rat";
+		this.n = "";
+
+		this.drops = {
+			"Poop": {
+				chance: 1,
+				min: 1,
+				max: 3
+			},
+			"throwable": {
+				chance: 0.2
+			},
+			"projectile": {
+				chance: 0.2
+			}
+		};
+	}
+
+	getMobType() {
+		return "rat";
+	}
+}
+
+export default EntityRat;

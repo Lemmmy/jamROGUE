@@ -46,8 +46,21 @@ class Entity {
 		this.Game.entities.splice(this.Game.entities.indexOf(this), 1);
 	}
 
+	move(x, y) {
+		this.x = x;
+		this.y = y;
+
+		_.filter(this.Game.players, p => {
+			return p.room == this.room;
+		}).forEach(p => {
+			p.addEvent("entity_move", this.serialize());
+			p.notify();
+		});
+	}
+
 	inspectEntity() {}
 	interact(player) {}
+	tick(time) {}
 }
 
 export default Entity;

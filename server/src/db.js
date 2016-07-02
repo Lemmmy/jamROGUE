@@ -26,6 +26,7 @@ let DB = {
 					inventory: Array,
 					money: Number,
 					xp: Number,
+					alive: Boolean,
 					level: {
 						type: Number,
 						default: 1

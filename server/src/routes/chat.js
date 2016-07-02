@@ -29,7 +29,7 @@ export default app => {
 
 		let message = req.body.message.replace(poopgex, "");
 
-		let nearby = Game.playersNear(player, 20);
+		let nearby = Game.playersNear(player, 30);
 		let ev = {
 			from: player.name,
 			message: message

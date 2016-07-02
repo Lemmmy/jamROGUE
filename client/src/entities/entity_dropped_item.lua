@@ -53,7 +53,7 @@ function EntityDroppedItem:getColour()
         elseif self.item.name == "Pebble" then
             return colours.lightGrey
         elseif self.item.name == "Apple" then
-            return colours.red
+            return colours.green
         end
     end
 

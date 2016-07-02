@@ -31,14 +31,16 @@ let items = {
 			description: "Just a rock.",
 			damage: 1,
 			minLevel: 0,
-			stack: 8
+			stack: 8,
+			range: 6
 		}
 	],
 	"shooter": [
 		{
 			name: "Slingshot",
 			description: "It's a{n} {name} - looks like it requires pebbles.",
-			range: 4
+			range: 8,
+			projectiles: ["Pebble"]
 		}
 	],
 	"projectile": [
@@ -55,8 +57,25 @@ let items = {
 			name: "Apple",
 			description: "An apple a day keeps the doctor away.",
 			minLevel: 0,
+			heal: 2,
+			stack: 4,
+			subType: "healing"
+		},
+		{
+			name: "Water Bottle",
+			description: "It's healthier than soda.",
+			minLevel: 0,
 			heal: 1,
-			stack: 4
+			verb: "drink",
+			subType: "healing"
+		},
+		{
+			name: "Poop",
+			description: "You really don't want to eat this.",
+			minLevel: 0,
+			heal: 1,
+			stack: 15,
+			subType: "healing"
 		}
 	],
 	"misc": [
@@ -131,6 +150,10 @@ class Item {
 			maxStack: this.item.stack || 1,
 			colour: this.rarity ? this.rarity.colour : CCColours.white,
 			subType: this.item.subType,
+			damage: this.item.damage,
+			heal: this.item.heal,
+			projectiles: this.item.projectiles,
+			range: this.item.range,
 			description: "&0" + this.item.description
 							.replace("{name}", "&" + CCColours.colourToHex(this.rarity ? this.rarity.colour : CCColours.white) + (this.rarity ? this.rarity.name + " " : "") + this.item.name + "&0")
 							.replace("{n}", this.rarity ? (/^[aeiou]/i.test(this.rarity.name) ? "n" : "") : "")
@@ -149,6 +172,24 @@ class Item {
 		let rarity = type !== "consumable" && type !== "projectile" && type !== "throwable" ? _.sample(_.filter(rarities, r => { return r.minLevel <= level; })) : null;
 
 		return new Item(item, type, null, rarity);
+	}
+
+	static randomRarity(type, level = 0) {
+		let rarity = type !== "consumable" && type !== "projectile" && type !== "throwable" ? _.sample(_.filter(rarities, r => { return r.minLevel <= level; })) : null;
+
+		return rarity;
+	}
+
+	static getTypes() {
+		return types;
+	}
+
+	static getItems() {
+		return items;
+	}
+
+	static getRarities() {
+		return rarities;
 	}
 }
 

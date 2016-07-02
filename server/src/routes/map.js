@@ -4,8 +4,13 @@ import _ from "lodash";
 
 export default app => {
 	app.get("/map", (req, res) => {
-		res.set("Content-Type", "image/png");
-		res.sendFile(path.resolve(__dirname + "/../dungeon.png"));
+		res.set("Content-Type", "text/html");
+		res.send("<html style='width: 100%; height: 100%;'><head><title>jamROGUE map</title></head><body style='margin: 0; width: 100%; height: 100%;'><img src='/map.svg' /></body></html>");
+	});
+
+	app.get("/map.svg", (req, res) => {
+		res.set("Content-Type", "image/svg+xml");
+		res.sendFile(path.resolve(__dirname + "/../dungeon.svg"));
 	});
 
 	app.get("/map.json", (req, res) => {
