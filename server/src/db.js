@@ -23,7 +23,7 @@ let DB = {
 					x: Number,
 					y: Number,
 					visitedRooms: Array,
-					items: Array,
+					inventory: Array,
 					money: Number,
 					xp: Number,
 					level: {
@@ -40,7 +40,7 @@ let DB = {
 					}
 				});
 
-				userSchema.set("toJSON", {
+				userSchema.set("serialize", {
 					transform: (doc, user) => {
 						return _.omit(user, "password");
 					}

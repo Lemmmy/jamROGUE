@@ -6,12 +6,15 @@ import _ from "lodash";
 
 let DungeonGenerator = {};
 
-let g = gm(600, 600, "white");
+let imageWidth = 1500;
+let imageHeight = 1500;
+
+let g = gm(imageWidth, imageHeight, "white");
 
 let rooms = [];
 
 let tileSize = 4;
-let roomCount = 150;
+let roomCount = 750;
 
 let minRoomWidth = 8;
 let maxRoomWidth = 28;
@@ -19,12 +22,12 @@ let maxRoomWidth = 28;
 let minRoomHeight = 8;
 let maxRoomHeight = 24;
 
-let hubRatio = 1.3;
+let hubRatio = 1.2;
 
 let padding = 1;
 
-let ellipseWidth = 150;
-let ellipseHeight = 30;
+let ellipseWidth = 500;
+let ellipseHeight = 500;
 
 function roundm(n, m) {
 	return Math.floor(((n + m - 1) / m)) * m;
@@ -129,7 +132,7 @@ function poop(a, b) {
 
 DungeonGenerator.generate = () => {
 	return new Promise((resolve, reject) => {
-		var start = now();
+		console.log("Generating dungeon");
 
 		for (let i = 0; i < roomCount; i++) {
 			let point = getRandomPointInEllipse(ellipseWidth, ellipseHeight);
@@ -141,6 +144,8 @@ DungeonGenerator.generate = () => {
 
 			rooms[i] = new Room(i, x, y, width, height);
 		}
+
+		console.log(`Created ${rooms.length} rooms`);
 
 		let widthTotal = 0;
 		let heightTotal = 0;
@@ -155,6 +160,10 @@ DungeonGenerator.generate = () => {
 
 		widthMean = widthTotal / roomCount;
 		heightMean = heightTotal / roomCount;
+
+		rooms.forEach(room => {
+			room.expand(1);
+		});
 
 		let iteration = 0;
 
@@ -203,6 +212,12 @@ DungeonGenerator.generate = () => {
 			} while (touching);
 		}
 
+		rooms.forEach(room => {
+			room.shrink(1);
+		});
+
+		console.log(`Spread ${rooms.length} rooms in ${iteration} iterations`);
+
 		let hubCount = 0;
 
 		rooms.forEach(room => {
@@ -211,6 +226,10 @@ DungeonGenerator.generate = () => {
 				hubCount++;
 			}
 		});
+
+		console.log(`Made ${hubCount} hub rooms`);
+
+		console.log("Calculating graph");
 
 		{
 			let a, b, c;
@@ -257,11 +276,9 @@ DungeonGenerator.generate = () => {
 			}
 		}
 
-		rooms.filter(a => {
-			return a.type !== "hall";
-		}).forEach(hall => {
-			hall.shrink(1);
-		});
+		console.log("Graph calculated");
+
+		console.log("Making hallways");
 
 		{
 			let dx, dy, x, y;
@@ -314,6 +331,8 @@ DungeonGenerator.generate = () => {
 		}).forEach(hall => {
 			hall.expand(1);
 		});
+
+		console.log("Selecting rooms");
 
 		rooms.forEach(room => {
 			let touched = false;
@@ -407,19 +426,10 @@ DungeonGenerator.generate = () => {
 			let alpha = room.type === "hub" ? "88" : room.type === "hall" ? "33" : "aa";
 			g.fill((room.type === "hub" ? "#ff0000" : room.type === "hall" ? "#00ff00" : "#0000ff") + alpha);
 
-			let x = (Math.floor(600 - (maxX + Math.abs(minX))) / 2) + room.x;
-			let y = (Math.floor(600 - (maxY + Math.abs(minY))) / 2) + room.y;
+			let x = (Math.floor(imageWidth - (maxX + Math.abs(minX))) / 2) + room.x;
+			let y = (Math.floor(imageHeight - (maxY + Math.abs(minY))) / 2) + room.y;
 
 			g.drawRectangle(Math.floor(Math.max(x, 0)), Math.floor(Math.max(y, 0)), Math.floor(Math.min(x + room.width)), Math.floor(Math.min(y + room.height)));
-		});
-
-		g.stroke("transparent", 0).fill("white").font("Lato.ttf").fontSize(8);
-
-		outRooms.forEach(room => {
-			let x = (600 - (maxX + Math.abs(minX))) / 2 + room.x;
-			let y = (600 - (maxY + Math.abs(minY))) / 2 + room.y;
-
-			g.drawText(x + 2, y + 8, room.id);
 		});
 
 		/*g.fill("transparent").stroke("#00000088", 1);
@@ -457,9 +467,14 @@ DungeonGenerator.generate = () => {
 			`Shift iterations: ${iteration}\n` +
 			`Time taken: ${(end - start).toFixed(3)} ms`);*/
 
-		g.filter("Point").resize(1200, 1200).write("dungeon.png", err => {
-			if (err)
+		console.log(`Generated ${outRooms.length} rooms`);
+
+		g.write("dungeon.png", err => {
+			if (err) {
+				console.error("Pooped the dungeon");
+
 				console.error(err);
+			}
 		});
 
 		resolve(outRooms);

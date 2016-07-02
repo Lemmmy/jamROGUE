@@ -2,6 +2,10 @@ import DB from "./db";
 import Player from "./player";
 import DungeonGenerator from "./dungeon";
 
+import Item from "./item";
+import EntityChest from "./entities/entity_chest";
+import EntityDroppedItem from "./entities/entity_dropped_item";
+
 import hat from "hat";
 import bcrypt from "bcrypt-nodejs";
 import Promise from "bluebird";
@@ -14,6 +18,7 @@ let Game = {
 	spawnRoom: 0,
 	stairRoom: 0,
 	dungeonID: hat(36),
+	entities: [],
 
 	init() {
 		return new Promise(resolve => {
@@ -74,9 +79,29 @@ let Game = {
 								break;
 							case "empty":
 								room.name = _.sample(["Empty Room", "Abandoned Room"]);
+
+								if (Math.random() >= 0.8) {
+									new EntityDroppedItem(Game, room.id, room.x + (room.width / 2), room.y + (room.height / 2), new Item(null, "misc", "Chest Key")).spawn();
+								}
+
+								var pebbleAmount = _.random (3, 12);
+								var items = [
+									["projectile", "Pebble"],
+									["throwable", "Rock"]
+								];
+
+								for (var i = 0; i < pebbleAmount; i++) {
+
+									var chosenItem = _.sample(items);
+									var item = new Item(null, chosenItem[0], chosenItem[1]);
+
+									new EntityDroppedItem(Game, room.id, _.random(room.x + 1, room.x + room.width - 1), _.random(room.y + 1, room.y + room.height - 1), item).spawn();
+								}
+
 								break;
 							case "mobs":
 								room.name = _.sample(["Monsters", "Sewer", "Mobs", "Dungeon", "Cells"]);
+								Game.fillRoomWithChests(room, 1, 3, 0.2);
 								break;
 						}
 					} else if (room.type === "hub" && !room.subType || (room.subType && room.subType !== "spawn" && room.subType !== "stair")) {
@@ -85,12 +110,14 @@ let Game = {
 						switch(room.subType) {
 							case "loot":
 								room.name = _.sample(["Treasury", "Storage Room", "Armoury", "Abandoned Camp"]);
+								Game.fillRoomWithChests(room, 3, 10, 0.5);
 								break;
 							case "camp":
 								room.name = _.sample(["Monster Camp", "Camp", "Large Camp"]);
 								break;
 							case "boss":
 								room.name = _.sample(["Boss", "Lair"]);
+								Game.fillRoomWithChests(room, 1, 3, 0.9);
 								break;
 						}
 					}
@@ -195,7 +222,15 @@ let Game = {
 	},
 
 	playerDistance(a, b) {
-		return Math.sqrt(playerDistanceSq(a, b));
+		return Math.sqrt(Game.playerDistanceSq(a, b));
+	},
+
+	playerDistancePointSq(a, bx, by) {
+		return (a.x - bx) * (a.x - bx) + (a.y - by) * (a.y - by);
+	},
+
+	playerDistancePoint(a, bx, by) {
+		return Math.sqrt(Game.playerDistancePointSq(a, bx, by));
 	},
 
 	playersNear(player, distance) {
@@ -204,6 +239,37 @@ let Game = {
 		return _.filter(_.without(Game.players, player), p => {
 			return Game.playerDistanceSq(player, p) <= d;
 		});
+	},
+
+	fillRoomWithChests(room, min, max, lockedRatio = 0.5) {
+		let amt =  _.random(min, max);
+		for (let i = 0; i < amt; i++) {
+			let side = _.random(1, 4);
+
+			let x = 0;
+			let y = 0;
+
+			switch (side) {
+				case 1:
+					x = room.x + 1;
+					y = _.random(room.y + 1, room.y + room.height - 1);
+					break;
+				case 2:
+					x = room.x + room.width - 1;
+					y = _.random(room.y + 1, room.y + room.height - 1);
+					break;
+				case 3:
+					x = _.random(room.x + 1, room.x + room.width - 1);
+					y = room.y + 1;
+					break;
+				case 4:
+					x = _.random(room.x + 1, room.x + room.width - 1);
+					y = room.y + room.height - 1;
+					break;
+			}
+
+			new EntityChest(Game, room.id, x, y, Math.random() <= lockedRatio).spawn()
+		}
 	}
 };
 

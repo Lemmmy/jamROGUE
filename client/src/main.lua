@@ -28,7 +28,7 @@ function main.changeState(dest)
     end
 end
 
-main.changeState("menu")
+main.changeState("login")
 
 require("src/loop.lua")(main)
 

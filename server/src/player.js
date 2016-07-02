@@ -1,6 +1,8 @@
 import DB from "./db";
-import CCColours from "./colours.js";
+import Item from "./item";
+import CCColours from "./colours";
 
+import util from "util";
 import _ from "lodash";
 
 class Player {
@@ -24,9 +26,11 @@ class Player {
 		this.y = 0;
 		this.visitedRooms = [];
 
-		this.health = user.health;
-		this.level = user.level;
-		this.xp = user.xp;
+		this.inventory = [];
+
+		this.health = user.health || 5;
+		this.level = user.level || 1;
+		this.xp = user.xp || 0;
 
 		setTimeout(this.ping.bind(this), 1000);
 
@@ -35,26 +39,45 @@ class Player {
 			this.room = user.room;
 			this.x = user.x;
 			this.y = user.y;
+
+			this.inventory = _.map(user.inventory, i => {
+				return {
+					count: i.count,
+					equipped: i.equipped,
+					item: Item.fromJSON(i.item)
+				};
+			});
 		} else {
 			this.room = this.Game.spawnRoom;
 			this.x = this.Game.rooms[this.Game.spawnRoom].x + this.Game.rooms[this.Game.spawnRoom].spawnX;
 			this.y = this.Game.rooms[this.Game.spawnRoom].y + this.Game.rooms[this.Game.spawnRoom].spawnY;
+
+			this.inventory.push({
+				count: 1,
+				equipped: true,
+				item: Item.randomItem("melee", this.level)
+			});
 
 			this.user.room = this.room;
 			this.user.x = this.x;
 			this.user.y = this.y;
 			this.user.dungeonID = this.Game.dungeonID;
 
-			this.user.save();
+			this.saveInventory();
 
-			this.addEvent("serverMessage", { text: "Welcome to a new dungeon.", colour: CCColours.lightBlue});
+			this.addEvent("server_message", { text: "Welcome to a new dungeon.", colour: CCColours.lightBlue});
 		}
 
 		this.Game.broadcastToAllBut(this.name, "join", this.toJSON());
 		this.addEvent("spawn", { player: this.toJSON(), players: _.map(this.Game.players, player => { return player.toJSON(); }) });
 
 		if (this.room >= 0) {
-			this.addEvent("room", this.Game.roomToJSON(this.Game.rooms[this.room]));
+			let room = this.Game.roomToJSON(this.Game.rooms[this.room]);
+
+			room.visited = true;
+			room.entities = _.filter(this.Game.entities, { room: this.room });
+
+			this.addEvent("room", room);
 		}
 
 		console.log(`Player ${this.name} connected`);
@@ -79,7 +102,7 @@ class Player {
 	ping() {
 		if (this.deleted) return;
 
-		if (!this.connected && new Date().getTime() - this.disconnectedTime.getTime() > 10000) {
+		if (!this.connected && new Date().getTime() - this.disconnectedTime.getTime() > 5000) {
 			return this.disconnect("timeout");
 		}
 
@@ -154,7 +177,17 @@ class Player {
 			roomID: this.room,
 			x: this.x,
 			y: this.y,
-			name: this.name
+			name: this.name,
+			health: this.health,
+			level: this.level,
+			xp: this.xp,
+			inventory: _.map(this.inventory, i => {
+				if (i.item instanceof Item) {
+					i.item = i.item.serialize();
+				}
+
+				return i;
+			})
 		};
 	}
 
@@ -187,7 +220,18 @@ class Player {
 		}
 
 		if (oldRoom !== this.room) {
-			this.addEvent("room", gotRoom ? _.set(this.Game.roomToJSON(this.Game.rooms[this.room]), "visited", true) : {});
+			let room;
+
+			if (gotRoom) {
+				room = this.Game.roomToJSON(this.Game.rooms[this.room]);
+
+				room.visited = true;
+				room.entities = _.map(_.filter(this.Game.entities, { room: this.room }), e => {
+					return e.serialize();
+				});
+			}
+
+			this.addEvent("room", gotRoom ? room : {});
 			this.notify();
 
 			this.visitedRooms.push(this.room);
@@ -200,6 +244,62 @@ class Player {
 			this.user.room = this.room;
 			this.user.visitedRooms = this.visitedRooms;
 		}
+	}
+
+	addToInventory(item, inventoryOffset = 0) {
+		let maxStack = (item instanceof Item ? item.item.stack : item.maxStack) || 1;
+
+		if (maxStack <= 1) {
+			if (this.inventory.length < 9 + inventoryOffset) {
+				this.inventory.push({
+					count: 1,
+					item: item
+				});
+
+				return true;
+			}
+		} else if (maxStack > 1) {
+			let existingStack = _.find(this.inventory, i => {
+				return i.item.type.toLowerCase() === item.type.toLowerCase() && i.count < maxStack;
+			});
+
+			if (!existingStack) {
+				if (this.inventory.length < 9 + inventoryOffset) {
+					this.inventory.push({
+						count: 1,
+						item: item
+					});
+
+					return true;
+				}
+			} else {
+				this.inventory[this.inventory.indexOf(existingStack)].count++;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	updateInventory() {
+		this.addEvent("inventory", _.map(this.inventory, i => {
+			if (i.item instanceof Item) {
+				i.item = i.item.serialize();
+			}
+
+			return i;
+		}));
+	}
+
+	saveInventory() {
+		this.user.inventory = _.map(this.inventory, i => {
+			if (i.item instanceof Item) {
+				i.item = i.item.serialize();
+			}
+
+			return i;
+		});
 	}
 }
 

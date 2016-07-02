@@ -1,6 +1,8 @@
 local buffer = require("src/buffer.lua")
 local constants = require("src/constants.lua")
 local Player = require("src/entities/entity_player.lua")
+local EntityDroppedItem = require("src/entities/entity_dropped_item.lua")
+local EntityChest = require("src/entities/entity_chest.lua")
 
 local w, h = term.getSize()
 
@@ -23,6 +25,8 @@ function game.init(main)
     game.sidebarMenuShowing = false
 
     game.onlineUsers = 0
+
+    game.entities = {}
 
     game.log = {}
     game.logWindow = framebuffer.new(w - 20, 4, true, 0, h - 4)
@@ -54,6 +58,18 @@ function game.print(text, colour)
         text = text,
         time = os.clock(),
         colour = colour
+    }
+
+    if #game.log > 20 then
+        table.remove(game.log, 1)
+    end
+end
+
+function game.printFancy(text)
+    game.log[#game.log + 1] = {
+        text = text,
+        time = os.clock(),
+        fancy = true
     }
 
     if #game.log > 20 then
@@ -198,11 +214,86 @@ function game.drawSidebar()
 end
 
 function game.drawSidebarInfo()
-    buffer.setBackgroundColour(colours.black)
+    local level = game.main.connection.player and game.main.connection.player.level or 1
+
+    local maxHealth = game.main.connection.player and level + 4 or 1
+    local health = game.main.connection.player and game.main.connection.player.health or 1
+
+    local healthBarWidth = 17
+    local healthWidth = math.floor(health / maxHealth * healthBarWidth)
+
     buffer.setCursorPos(w - 18, 5)
-    buffer.write((" "):rep(17))
+    buffer.blit(
+        ("\140"):rep(healthBarWidth) .. " \3",
+        ("e"):rep(healthWidth) .. ("f"):rep(healthBarWidth - healthWidth) .. "00",
+        ("7"):rep(healthBarWidth + 2)
+    )
+
+    local maxXP = game.main.connection.player and 10 * 1.25 ^ level or 1
+    local xp = game.main.connection.player and game.main.connection.player.xp or 1
+
+    local xpText = " Lv " .. level
+
+    local xpBarWidth = 19 - #xpText
+    local xpWidth = math.floor(xp / maxXP * xpBarWidth)
+
+    buffer.setCursorPos(w - 18, 6)
+    buffer.blit(
+        ("\140"):rep(xpBarWidth) .. xpText,
+        ("4"):rep(xpWidth) .. ("f"):rep(xpBarWidth - xpWidth) .. ("0"):rep(#xpText),
+        ("7"):rep(xpBarWidth + #xpText)
+    )
+
     buffer.setBackgroundColour(colours.grey)
-    buffer.write(" \3")
+
+    if game.main.connection.player and game.main.connection.player.inventory then
+        for i, v in ipairs(game.main.connection.player.inventory) do
+            if v.equipped then
+                buffer.setBackgroundColour(colours.black)
+
+                buffer.setCursorPos(w - 18, 7 + i)
+                buffer.write((" "):rep(17))
+            end
+
+            buffer.setCursorPos(w - 18, 7 + i)
+
+            if v.count > 1 then
+                buffer.setTextColour(colours.white)
+                buffer.write(v.count .. "x ")
+            end
+
+            buffer.setTextColour(v.item.colour)
+            buffer.write(v.item.name)
+
+            buffer.setBackgroundColour(colours.grey)
+
+            buffer.setCursorPos(w, 7 + i)
+            buffer.setTextColour(colours.white)
+            buffer.write((game.itemMenuShowing and game.itemMenuItem == i) and "\30" or "\31")
+        end
+
+        for i = 1, 9 - #game.main.connection.player.inventory do
+            buffer.setCursorPos(w - 18, 7 + i + #game.main.connection.player.inventory)
+            buffer.setTextColour(colours.lightGrey)
+            buffer.write(("-"):rep(19))
+        end
+
+        buffer.setTextColour(colours.white)
+    end
+
+    if game.itemMenuShowing then
+        buffer.setBackgroundColour(colours.white)
+        buffer.setTextColour(colours.black)
+        buffer.setCursorPos(w - 19, 8 + game.itemMenuItem)
+        buffer.write("\149" .. "Inspect" .. (" "):rep(19 - #"Inspect"))
+        buffer.setCursorPos(w - 19, 9 + game.itemMenuItem)
+        buffer.write("\149" .. "Equip" .. (" "):rep(19 - #"Equip"))
+        buffer.setCursorPos(w - 19, 10 + game.itemMenuItem)
+        buffer.write("\149" .. "Drop" .. (" "):rep(19 - #"Drop"))
+    end
+
+    buffer.setBackgroundColour(colours.grey)
+    buffer.setTextColour(colours.white)
 end
 
 function game.drawSidebarMenu()
@@ -226,8 +317,26 @@ function game.drawLog()
     term.setCursorPos(1, 1)
 
     for _, v in ipairs(game.log) do
-        term.setTextColour(v.colour or colours.white)
-        print(v.text)
+        if not v.fancy then
+            term.setTextColour(v.colour or colours.white)
+            print(v.text)
+        else
+            local t = "&0" .. v.text .. "&0"
+            local fields = {}
+            local lastColour, lastPos = "0", 0
+
+            for pos, clr in t:gmatch("()&(%x)") do
+                table.insert(fields, { t:sub(lastPos + 2, pos - 1), lastColour })
+                lastColour, lastPos = clr, pos
+            end
+
+            for i = 2, #fields do
+                term.setTextColour(2 ^ (tonumber(fields[i][2], 16)))
+                write(fields[i][1])
+            end
+
+            write("\n")
+        end
     end
 
     term.redirect(buffer)
@@ -409,7 +518,7 @@ function game.drawRooms()
                                 for _, hid in ipairs(room.touchingHalls) do
                                     local hall = game.rooms[hid + 1]
 
-                                    if hid ~= room.id and room.x + x > hall.x and room.x + x < hall.x + hall.width and room.y + roomHeight <= hall.y + hall.height then
+                                    if hid ~= room.id and room.x + x >= hall.x + 1 and room.x + x <= hall.x + hall.width - 1 and room.y + roomHeight <= hall.y + hall.height and room.y ~= hall.y then
                                         stop = true
                                     end
                                 end
@@ -470,6 +579,19 @@ function game.drawRooms()
 end
 
 function game.drawEntities()
+    game.viewportWindow.setTextColour(colours.white)
+    if game.entities then
+        for _, v in ipairs(game.entities) do
+            local eX, eY = worldToViewportPos(v.x, v.y)
+
+            if eX >= 1 and eY >= 1 and eX <= game.viewportWidth + 1 and eY <= game.viewportHeight + 1 then
+                game.viewportWindow.setCursorPos(eX, eY)
+                game.viewportWindow.setTextColour(v.getColour and v:getColour() or colours.white)
+                game.viewportWindow.write(v.getSymbol and v:getSymbol() or "?")
+            end
+        end
+    end
+
     game.viewportWindow.setTextColour(colours.lightGrey)
     for _, player in ipairs(game.main.connection.players) do
         local playerX, playerY = worldToViewportPos(player.x, player.y)
@@ -505,7 +627,7 @@ function game.mouseClick(button, x, y)
         end
 
         if x >= w - 19 and x <= w then
-            if y == 3 then
+            if y == 3 and not game.itemMenuShowing then
                 game.sidebarMenuShowing = not game.sidebarMenuShowing
 
                 return
@@ -525,7 +647,50 @@ function game.mouseClick(button, x, y)
                 return
             end
 
-            if game.sidebarScreen == 1 then
+            if game.sidebarScreen == 0 then
+                if game.itemMenuShowing then
+                    if x == w then
+                        game.itemMenuShowing = false
+                        return
+                    end
+
+                    if y == game.itemMenuItem + 8 then
+                        if game.main.connection.player and game.main.connection.player.inventory and game.main.connection.player.inventory[game.itemMenuItem] then
+                            game.printFancy(game.main.connection.player.inventory[game.itemMenuItem].item.description)
+                        end
+                    elseif y == game.itemMenuItem + 9 then
+                        http.request(constants.server .. "game/equip", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (game.itemMenuItem - 1))
+                    elseif y == game.itemMenuItem + 10 then
+                        http.request(constants.server .. "game/drop", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (game.itemMenuItem - 1))
+                    end
+
+                    game.itemMenuShowing = false
+                    return
+                end
+
+                if y == 5 then
+                    local maxHealth = floor(game.main.connection.player and game.main.connection.player.level + 4 or 1)
+                    local health = floor(game.main.connection.player and game.main.connection.player.health or 1)
+
+                    local colour = health > maxHealth * 0.6 and "5" or health > maxHealth * 0.4 and "4" or health > maxHealth * 0.25 and "1" or "e"
+
+                    game.printFancy("You have &" .. colour .. health .. "&0 HP out of " .. "&5" .. maxHealth .. "&0 HP")
+                elseif y == 6 then
+                    local maxXP = floor(game.main.connection.player and 10 * 1.25 ^ game.main.connection.player.level or 1)
+                    local xp = floor(game.main.connection.player and game.main.connection.player.xp or 1)
+
+                    game.printFancy("You have &4" .. xp .. "&0 XP out of " .. "&4" .. maxXP .. "&0 XP")
+                elseif y >= 8 then
+                    if game.main.connection.player and game.main.connection.player.inventory and game.main.connection.player.inventory[y - 7] then
+                        if x == w then
+                            game.itemMenuShowing = true
+                            game.itemMenuItem = y - 7
+                        else
+                            game.printFancy(game.main.connection.player.inventory[y - 7].item.description)
+                        end
+                    end
+                end
+            elseif game.sidebarScreen == 1 then
                 if y == h - 1 then
                     http.request(constants.server .. "game/quit", "token=" .. textutils.urlEncode(game.main.connection.token))
                     game.main.changeState("menu")
@@ -539,6 +704,44 @@ function game.mouseClick(button, x, y)
             for _, player in ipairs(game.main.connection.players) do
                 if player.x == wx and player.y == wy then
                     game.print("That's " .. player.name .. (random(1, 2) == 1 and "." or "!"))
+                end
+
+                return
+            end
+
+            if game.entities then
+                for _, entity in ipairs(game.entities) do
+                    if entity.x == wx and entity.y == wy then
+                        if entity.inspect then
+                            entity:inspect(game.main.connection.token)
+                        end
+
+                        return
+                    end
+                end
+            end
+        end
+    elseif button == 2 then
+        if x >= w - 19 and x <= w then
+            if game.sidebarScreen == 0 then
+                if y >= 8 and game.main.connection.player and game.main.connection.player.inventory and game.main.connection.player.inventory[y - 7] then
+                    http.request(constants.server .. "game/equip", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (y - 8))
+                end
+            end
+        end
+
+        if x > 1 and y > 1 and x < game.viewportWidth + 2 and y < game.viewportHeight + 2 then
+            local wx, wy = viewportToWorldPos(x - 1, y - 1)
+
+            if game.entities then
+                for _, entity in ipairs(game.entities) do
+                    if entity.x == wx and entity.y == wy then
+                        if entity.interact then
+                            entity:interact(game.main.connection.token)
+                        end
+
+                        return
+                    end
                 end
             end
         end
@@ -661,22 +864,37 @@ end
 
 function game.spawn(data)
     game.main.connection.player = Player(data.player.roomID, data.player.x, data.player.y, data.player.name)
+    game.main.connection.player.health = data.player.health
+    game.main.connection.player.level = data.player.level
+    game.main.connection.player.xp = data.player.xp
+    game.main.connection.player.inventory = data.player.inventory
 
     for _, player in ipairs(data.players) do
         if player.name:lower() ~= data.player.name:lower() then
-            table.insert(game.main.connection.players, Player(player.roomID, player.x, player.y, player.name))
+            local poop = Player(player.roomID, player.x, player.y, player.name)
+            poop.health = player.health
+            poop.level = player.level
+            poop.xp = player.xp
+
+            table.insert(game.main.connection.players, poop)
         end
     end
 end
 
 function game.join(data)
-    table.insert(game.main.connection.players, Player(data.roomID, data.x, data.y, data.name))
+    local poop = Player(data.roomID, data.x, data.y, data.name)
+    poop.health = data.health
+    poop.level = data.level
+    poop.xp = data.xp
+
+    table.insert(game.main.connection.players, poop)
 end
 
 function game.quit(data)
     for i, player in ipairs(game.main.connection.players) do
         if player.name == data.name then
             table.remove(game.main.connection.players, i)
+            return
         end
     end
 end
@@ -689,6 +907,12 @@ function game.room(data)
     end
 
     game.main.connection.room = data
+
+    game.entities = {}
+
+    if data.entities then
+        game.loadEntities(data.entities)
+    end
 end
 
 function game.move(data)
@@ -702,11 +926,46 @@ function game.move(data)
 end
 
 function game.serverMessage(data)
-    game.print(data.text, data.colour or colours.white)
+    if data.fancy then
+        game.printFancy(data.text)
+    else
+        game.print(data.text, data.colour or colours.white)
+    end
 end
 
 function game.chat(data)
     game.print("<" .. data.from .. "> " .. data.message, data.from:lower() == game.main.connection.player.name:lower() and colours.white or colours.lightGrey)
+end
+
+function game.updateInventory(data)
+    game.main.connection.player.inventory = data
+end
+
+function game.spawnEntity(data)
+    game.loadEntity(data)
+end
+
+function game.removeEntity(data)
+    for i, v in ipairs(game.entities) do
+        if v.id == data.id then
+            table.remove(game.entities, i)
+            return
+        end
+    end
+end
+
+function game.loadEntity(entity)
+    if entity.type == "DroppedItem" then
+        table.insert(game.entities, EntityDroppedItem(entity.id, entity.x, entity.y, entity.item))
+    elseif entity.type == "Chest" then
+        table.insert(game.entities, EntityChest(entity.id, entity.x, entity.y, entity.locked))
+    end
+end
+
+function game.loadEntities(entities)
+    for _, v in ipairs(entities) do
+        game.loadEntity(v)
+    end
 end
 
 function game.loadMap(rooms)
@@ -720,8 +979,11 @@ game.events = {
     join = game.join,
     quit = game.quit,
     move = game.move,
-    serverMessage = game.serverMessage,
-    chat = game.chat
+    server_message = game.serverMessage,
+    chat = game.chat,
+    inventory = game.updateInventory,
+    entity_spawn = game.spawnEntity,
+    entity_remove = game.removeEntity
 }
 
 return game

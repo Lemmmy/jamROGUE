@@ -17,6 +17,10 @@ function EntityPlayer:_init(roomID, x, y, name)
 
     self.roomID = roomID
     self.name = name
+
+    self.health = 5
+    self.level = 1
+    self.xp = 0
 end
 
 function EntityPlayer:getType()

@@ -90,7 +90,7 @@ function menu.mouseClick(button, x, y)
             menu.main.changeState("login")
         elseif x >= w / 2 - 6 and x <= w / 2 + 8 and y == 10 then
             menu.main.changeState("register")
-        elseif x >= w / 2 - 6 and x <= w / 2 + 8 and y ==1210 then
+        elseif x >= w / 2 - 6 and x <= w / 2 + 8 and y == 12 then
             menu.main.changeState("controls")
         elseif x >= w / 2 - 6 and x <= w / 2 + 8 and y == 14 then
             menu.main.exiting = true

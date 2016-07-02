@@ -1,8 +1,9 @@
-import DB from "../db";
 import Game from "../game";
 
+import _ from "lodash";
+
 export default app => {
-	app.post("/add_event", (req, res) => {
+	app.post("/game/entity/:id/inspect", (req, res) => {
 		if (!req.body.token) {
 			return res.json({
 				ok: false,
@@ -19,7 +20,19 @@ export default app => {
 			});
 		}
 
-		player.addEvent(req.body.type, req.body.data);
+		let entity = _.find(Game.entities, { id: req.params.id });
+
+		if (!entity) {
+			return res.json({
+				ok: false,
+				error: "no_entity"
+			});
+		}
+
+		player.addEvent("server_message", {
+			fancy: true,
+			text: entity.inspectEntity()
+		});
 		player.notify();
 
 		res.json({
