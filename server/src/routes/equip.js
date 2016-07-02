@@ -55,7 +55,7 @@ export default app => {
 
 				player.addEvent("server_message", {
 					fancy: true,
-					text: "You " + (i.verb || "ate") + " " + (i.count && i.count > 1 ? ("a" + (i.item.rarity ? (/^[aeiou]/i.test(i.item.rarity) ? "n" : "") : (/^[aeiou]/i.test(i.item.name) ? "n" : ""))) : "the") + " &" + CCColours.colourToHex(i.item.rarity ? i.item.colour : CCColours.white) + (i.item.rarity ? i.item.rarity + " " : "") + i.item.name + "&0" + "."
+					text: "You " + (i.item.verb || "ate") + " " + (i.count && i.count > 1 ? ("a" + (i.item.rarity ? (/^[aeiou]/i.test(i.item.rarity) ? "n" : "") : (/^[aeiou]/i.test(i.item.name) ? "n" : ""))) : "the") + " &" + CCColours.colourToHex(i.item.rarity ? i.item.colour : CCColours.white) + (i.item.rarity ? i.item.rarity + " " : "") + i.item.name + "&0" + "."
 				});
 
 				player.addEvent("damage", {

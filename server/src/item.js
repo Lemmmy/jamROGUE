@@ -222,7 +222,7 @@ let rarities = [
 	{
 		name: "Regular",
 		colour: CCColours.white,
-		minLevel: 3,
+		minLevel: 2,
 		damageModifier: 1.2
 	},
 	{
@@ -234,25 +234,25 @@ let rarities = [
 	{
 		name: "Rare",
 		colour: CCColours.yellow,
-		minLevel: 8,
+		minLevel: 6,
 		damageModifier: 2
 	},
 	{
 		name: "Legendary",
 		colour: CCColours.blue,
-		minLevel: 12,
+		minLevel: 8,
 		damageModifier: 3
 	},
 	{
 		name: "Exalted",
 		colour: CCColours.orange,
-		minLevel: 15,
+		minLevel: 10,
 		damageModifier: 4
 	},
 	{
 		name: "Epic",
 		colour: CCColours.red,
-		minLevel: 20,
+		minLevel: 15,
 		damageModifier: 5
 	}
 ];
@@ -285,6 +285,7 @@ class Item {
 			maxStack: this.item.stack || 1,
 			colour: this.rarity ? this.rarity.colour : CCColours.white,
 			subType: this.item.subType,
+			verb: this.item.verb,
 			damage: this.item.damage,
 			rarityDamageModifier: this.rarity ? this.rarity.damageModifier : null,
 			heal: this.item.heal,
