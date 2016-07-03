@@ -2,7 +2,7 @@ if not term.isColour() then
     error("Use an advanced computer")
 end
 
-sleep(0)
+os.queueEvent("fake") while os.pullEvent() ~= "fake" do end
 
 local workingDir = fs.getDir(shell.getRunningProgram())
 
