@@ -1,5 +1,6 @@
 local ease = require("src/utils/ease.lua")
 local buffer = require("src/buffer.lua")
+local constants = require("src/constants.lua")
 
 local w, h = term.getSize()
 
@@ -64,6 +65,10 @@ function menu.draw()
     buffer.setTextColour(colours.grey)
     buffer.setCursorPos((w - #"Made by Lemmmy") / 2 + 1, h - 1)
     buffer.write("Made by Lemmmy")
+    
+    buffer.setTextColour(colours.lightGrey)
+    buffer.setCursorPos(3, h - 1)
+    buffer.write("Version "..constants.version)
 end
 
 function menu.keyUp(key, keycode)
