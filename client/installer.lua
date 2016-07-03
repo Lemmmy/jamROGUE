@@ -122,7 +122,7 @@ for k, v in pairs(files) do
 end
 
 local f = fs.open("jamrogue", "w")
-f.writeLine("shell.setDir(\".jamrogue/\"); shell.run(\"jamrogue.lua\")")
+f.writeLine([[shell.run("/.jamrogue/jamrogue.lua")]])
 f.close()
 
 printFancy("Done! Run &5jamrogue")

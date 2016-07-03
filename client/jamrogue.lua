@@ -2,12 +2,13 @@ if not term.isColour() then
     error("Use an advanced computer")
 end
 
-os.queueEvent("fake") while os.pullEvent() ~= "fake" do end
+sleep(0.1)
+--os.queueEvent("fake") while os.pullEvent() ~= "fake" do end
 
 local workingDir = fs.getDir(shell.getRunningProgram())
 
 function resolveFile(file)
-    return shell.resolve(file)
+	return ((file:sub(1, 1) == "/" or file:sub(1, 1) == "\\") and file) or fs.combine(workingDir, file)
 end
 
 local requireCache = {}
@@ -26,10 +27,10 @@ function require(file)
 
         setmetatable(env, { __index = _G })
 
-        local chunk, err = loadfile(shell.resolve(file), env)
+        local chunk, err = loadfile(path, env)
 
         if chunk == nil then
-            return error("Error loading file " .. shell.resolve(file) .. ":\n" .. (err or "N/A"), 0)
+            return error("Error loading file " .. path .. ":\n" .. (err or "N/A"), 0)
         end
 
         requireCache[path] = chunk()
