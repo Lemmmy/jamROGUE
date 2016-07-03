@@ -254,12 +254,14 @@ function game.drawSidebarInfo()
     local xpBarWidth = 19 - #xpText
     local xpWidth = math.floor(xp / maxXP * xpBarWidth)
 
-    buffer.setCursorPos(w - 18, 6)
-    buffer.blit(
-        ("\140"):rep(xpBarWidth) .. xpText,
-        ("4"):rep(xpWidth) .. ("f"):rep(xpBarWidth - xpWidth) .. ("0"):rep(#xpText),
-        ("7"):rep(xpBarWidth + #xpText)
-    )
+    if xpBarWidth > 0 and xpWidth > 0 and #xpText > 0 then
+        buffer.setCursorPos(w - 18, 6)
+        buffer.blit(
+            ("\140"):rep(xpBarWidth) .. xpText,
+            ("4"):rep(xpWidth) .. ("f"):rep(xpBarWidth - xpWidth) .. ("0"):rep(#xpText),
+            ("7"):rep(xpBarWidth + #xpText)
+        )
+    end
 
     buffer.setBackgroundColour(colours.grey)
 
