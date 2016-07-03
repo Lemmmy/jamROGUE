@@ -4,7 +4,7 @@ end
 
 sleep(0.1)
 
-local version = "0.03"
+local version = "0.04"
 
 local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION?" .. textutils.urlEncode(os.clock()))
 

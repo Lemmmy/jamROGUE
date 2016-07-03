@@ -237,7 +237,7 @@ function game.drawSidebarInfo()
     local health = game.main.connection.player and game.main.connection.player.health or 1
 
     local healthBarWidth = 17
-    local healthWidth = ath.min(math.max(math.floor(health / maxHealth * healthBarWidth), 0), healthBarWidth)
+    local healthWidth = math.min(math.max(math.floor(health / maxHealth * healthBarWidth), 0), healthBarWidth)
 
     buffer.setCursorPos(w - 18, 5)
     buffer.blit(
