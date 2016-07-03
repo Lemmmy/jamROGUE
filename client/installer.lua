@@ -106,7 +106,7 @@ for k, v in pairs(files) do
     printFancy("Fetching file &5" .. v .. "&0...")
 
     local f = fs.open(fs.combine(".jamrogue", v), k:sub(-#".b64") == ".b64" and "wb" or "w")
-    local h = http.get(k)
+    local h = http.get(k .. "?" .. textutils.urlEncode(os.clock()))
 
     if k:sub(-#".b64") == ".b64" then
         local x = decode(h.readAll())
