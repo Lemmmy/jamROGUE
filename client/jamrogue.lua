@@ -7,13 +7,18 @@ sleep(0.1)
 local version = "0.02"
 
 local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION")
-if versionCheck and version ~= versionCheck.readAll() then
-    term.clear()
-    term.setCursorPos(1, 1)
-    print("Not the latest version - running the updater\n")
-    print("Current: " .. version .. " Latest: " .. versionCheck.readAll())
-    shell.run("pastebin run t9aev7fA")
-    return
+
+if versionCheck then
+    local latest = versionCheck.readAll()
+
+    if version ~= latest then
+        term.clear()
+        term.setCursorPos(1, 1)
+        print("Not the latest version - running the updater\n")
+        print("Current: " .. version .. " Latest: " .. latest .. "\n")
+        shell.run("pastebin run t9aev7fA")
+        return
+    end
 end
 
 local workingDir = fs.getDir(shell.getRunningProgram())
