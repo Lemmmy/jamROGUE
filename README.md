@@ -1,6 +1,9 @@
 # jamROGUE
 My entry for CCJam 2016. It is a multiplayer roguelike.
 
+# Install
+`pastebin run t9aev7fA`
+
 # IMPORTANT
 **This probably won't run in-game (especially on a multiplayer server!!!) so don't try it**
 
