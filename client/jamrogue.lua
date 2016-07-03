@@ -47,4 +47,8 @@ if not framebuffer then
     os.loadAPI(resolveFile("lib/framebuffer"))
 end
 
-local main = require("src/main.lua")
+local function run()
+    local main = require("src/main.lua")
+end
+
+print(pcall(run))
