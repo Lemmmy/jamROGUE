@@ -3,7 +3,16 @@ if not term.isColour() then
 end
 
 sleep(0.1)
---os.queueEvent("fake") while os.pullEvent() ~= "fake" do end
+
+local version = "0.01"
+
+local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION")
+if versionCheck and version ~= versionCheck.readAll() then
+    print("Not the latest version - running the updater")
+    term.clear()
+    shell.run("pastebin run t9aev7fA")
+    return
+end
 
 local workingDir = fs.getDir(shell.getRunningProgram())
 

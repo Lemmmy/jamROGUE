@@ -257,7 +257,7 @@ function game.drawSidebarInfo()
     buffer.setCursorPos(w - 18, 6)
     buffer.blit(
         ("\140"):rep(xpBarWidth) .. xpText,
-        ("4"):rep(xpWidth) .. ("f"):rep(xpBarWidth - xpWidth) .. ("0"):rep(#xpText),
+        ("4"):rep(xpWidth) .. ("f"):rep(math.max(xpBarWidth - xpWidth, 0)) .. ("0"):rep(#xpText),
         ("7"):rep(xpBarWidth + #xpText)
     )
 
