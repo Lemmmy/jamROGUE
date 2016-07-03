@@ -217,7 +217,8 @@ let rarities = [
 	{
 		name: "Common",
 		colour: CCColours.lightGrey,
-		minLevel: 0
+		minLevel: 0,
+		damageModifier: 1
 	},
 	{
 		name: "Regular",
