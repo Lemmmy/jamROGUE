@@ -51,7 +51,7 @@ export default app => {
 			if (i.item.subType && i.item.subType === "healing") {
 				player.health = Math.min(player.health + i.item.heal, player.level + 4);
 				player.user.health = player.health;
-				player.user.save();
+				player.user.save().catch(console.error);
 
 				player.addEvent("server_message", {
 					fancy: true,

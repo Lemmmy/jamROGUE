@@ -36,7 +36,7 @@ export default app => {
 
 		player.user.alive = true;
 		player.user.health = player.level + 4;
-		player.user.save();
+		player.user.save().catch(console.error);
 
 		player.spawn();
 		player.notify();

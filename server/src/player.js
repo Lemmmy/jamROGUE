@@ -130,14 +130,14 @@ class Player {
 		if (this.alive) {
 			this.user.alive = true;
 
-			this.user.save();
+			this.user.save().catch(console.error);
 		}
 	}
 
 	disconnect(reason) {
 		this.deleted = true;
 
-		this.user.save();
+		this.user.save().catch(console.error);
 
 		console.log(`Player ${this.name} disconnected for reason ${reason}`);
 
@@ -175,7 +175,7 @@ class Player {
 			return this.disconnect("timeout");
 		}
 
-		this.user.save();
+		this.user.save().catch(console.error);
 
 		setTimeout(this.ping.bind(this), 1000);
 	}
@@ -429,7 +429,7 @@ class Player {
 		this.Game.broadcastToAllBut(this.name, "player_died", { name: this.name });
 
 		this.user.alive = false;
-		this.user.save();
+		this.user.save().catch(console.error);
 
 		return this.addEvent("dead");
 	}
@@ -440,7 +440,7 @@ class Player {
 		this.health -= Math.max(Math.ceil(damage), 0);
 		this.user.health = this.health;
 
-		this.user.save();
+		this.user.save().catch(console.error);
 
 		if (this.health <= 0) {
 			this.die();
@@ -467,7 +467,7 @@ class Player {
 		}
 
 		this.user.xp = this.xp;
-		this.user.save();
+		this.user.save().catch(console.error);
 
 		this.addEvent("xp", {
 			xp: this.xp,
