@@ -1,3 +1,3 @@
 return {
-    server = "http://localhost:3000/"
+    server = "http://jamrogue.lemmmy.pw/"
 }

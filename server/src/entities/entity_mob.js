@@ -142,7 +142,6 @@ class EntityMob extends Entity {
 					}
 				}
 			});
-
 		});
 
 		items.forEach(i => {

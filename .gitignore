@@ -1,6 +1,9 @@
 .idea/
 client/sketch
 client/startup
+client/jamrogue
+client/.jamrogue
+client/.jamrogue-installer
 server/dist
 server/node_modules
 node_modules

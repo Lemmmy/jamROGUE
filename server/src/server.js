@@ -5,7 +5,7 @@ import fs from "fs";
 import Promise from "bluebird";
 
 let Server = {
-	init() {
+	init(config) {
 		return new Promise((resolve, reject) => {
 			let app = express();
 
@@ -51,12 +51,14 @@ let Server = {
 				reject();
 			}
 
-			app.listen(3000, () => {
-				console.log("[Webserver] Ready");
+			fs.unlink(config.listen, () => {
+				app.listen(config.listen, () => {
+					console.log("[Webserver] Ready");
 
-				resolve();
-			}).on('error', err => {
-				console.log(err);
+					resolve();
+				}).on("error", err => {
+					console.log(err);
+				});
 			});
 
 			Server.app = app;
