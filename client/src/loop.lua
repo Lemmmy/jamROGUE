@@ -34,6 +34,8 @@ return function(main)
 
             timercent = os.startTimer(0.1)
         elseif event == "key_up" then
+            if not main.stateTime and main.stateTime <= 0.25 then return end
+
             if main.states[main.state] and main.states[main.state].keyUp then
                 main.states[main.state].keyUp(keys.getName(p1), p1)
             end
