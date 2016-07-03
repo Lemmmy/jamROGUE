@@ -467,6 +467,7 @@ class Player {
 		}
 
 		this.user.xp = this.xp;
+		this.user.level = this.level;
 		this.user.save().catch(console.error);
 
 		this.addEvent("xp", {
