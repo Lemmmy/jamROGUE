@@ -6,7 +6,7 @@ sleep(0.1)
 
 local version = "0.02"
 
-local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION")
+local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION?" .. textutils.urlEncode(os.clock()))
 
 if versionCheck then
     local latest = versionCheck.readAll()
