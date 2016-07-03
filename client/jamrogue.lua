@@ -2,6 +2,8 @@ if not term.isColour() then
     error("Use an advanced computer")
 end
 
+sleep(0)
+
 local workingDir = fs.getDir(shell.getRunningProgram())
 
 function resolveFile(file)
