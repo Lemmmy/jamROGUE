@@ -4,7 +4,7 @@ end
 
 sleep(0.1)
 
-local version = "0.0"
+local version = "0.02"
 
 local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION")
 if versionCheck and version ~= versionCheck.readAll() then
