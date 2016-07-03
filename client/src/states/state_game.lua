@@ -252,13 +252,13 @@ function game.drawSidebarInfo()
     local xpText = " Lv " .. level
 
     local xpBarWidth = 19 - #xpText
-    local xpWidth = math.floor(xp / maxXP * xpBarWidth)
+    local xpWidth = math.min(math.max(math.floor(xp / maxXP * xpBarWidth), 0), xpBarWidth)
 
     buffer.setCursorPos(w - 18, 6)
     buffer.blit(
-        ("\140"):rep((math.max(xpBarWidth, 0)) .. xpText,
-        ("4"):rep(math.max(xpWidth, 0)) .. ("f"):rep(math.max(xpBarWidth - xpWidth, 0)) .. ("0"):rep(math.max(#xpText, 0)),
-        ("7"):rep(math.max(xpBarWidth + #xpText, 0))
+        ("\140"):rep(xpBarWidth) .. xpText,
+        ("4"):rep(xpWidth) .. ("f"):rep(xpBarWidth - xpWidth) .. ("0"):rep(#xpText),
+        ("7"):rep(xpBarWidth + #xpText)
     )
 
     buffer.setBackgroundColour(colours.grey)
