@@ -80,13 +80,13 @@ local files = {
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/entities/entity_player.lua"] = "src/entities/entity_player.lua"
 }
 
-printFancy("jamROGUE will install its files to the &3.jamrogue&0 directory and create a launcher file called &3jamrogue&0.\nIs this ok? &8Y/N")
+printFancy("jamROGUE will install its files to the &3.jamrogue&0 directory and create a launcher file called &3jamrogue&0.\nIs this ok? &8y/n")
 
 local _, char = os.pullEvent("char")
 if char ~= "y" then error("Exited by user.") end
 
 if fs.exists(".jamrogue/") then
-    printFancy("\njamROGUE directory already exists. \nClear it? &8Y/N")
+    printFancy("\njamROGUE directory already exists. \nClear it? &8y/n")
 
     local _, char = os.pullEvent("char")
     if char ~= "y" then error("Exited by user.") end
