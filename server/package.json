@@ -13,7 +13,11 @@
     "gulp-watch": "^4.3.8"
   },
   "author": "Lemmmy",
-  "license": "ISC",
+  "license": "GPLv3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lemmmy/jamROGUE.git"
+  }
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "bluebird": "^3.4.1",
