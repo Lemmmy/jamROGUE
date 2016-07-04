@@ -342,7 +342,7 @@ There may also be open issues [asking for help](https://github.com/Lemmmy/CCJam-
 
 
 # Server
-The server-side of jamROGUE is written in Node.js. It uses ES2015, and is compiled with Babel. IT requires MongoDB for the database, and uses Express.js for the webserver.
+The server-side of jamROGUE is written in Node.js. It uses ES2015, and is compiled with Babel. It requires MongoDB for the database, and uses Express.js for the webserver.
 
 ## Installation (Linux)
 
