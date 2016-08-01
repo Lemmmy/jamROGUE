@@ -1,4 +1,4 @@
 return {
     server = "http://jamrogue.lemmmy.pw/",
-    version = 0.04
+    version = 0.06
 }

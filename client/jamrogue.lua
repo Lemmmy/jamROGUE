@@ -4,7 +4,7 @@ end
 
 sleep(0.1)
 
-local version = "0.05"
+local version = "0.06"
 
 local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION?" .. textutils.urlEncode(os.clock()))
 
@@ -70,4 +70,8 @@ local function run()
     local main = require("src/main.lua")
 end
 
-print(pcall(run))
+local ok, msg = pcall(run)
+
+if not ok then
+    print(msg)
+end

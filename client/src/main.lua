@@ -9,10 +9,11 @@ main.states = {
     register = require("src/states/state_register.lua"),
     game = require("src/states/state_game.lua"),
     error = require("src/states/state_error.lua"),
-    controls = require("src/states/state_controls.lua")
+    controls = require("src/states/state_controls.lua"),
+    thanks = require("src/states/state_thanks.lua")
 }
 
-main.state = "menu"
+main.state = "thanks"
 main.stateStartTime = os.clock()
 main.stateTime = 1
 
@@ -28,7 +29,7 @@ function main.changeState(dest)
     end
 end
 
-main.changeState("menu")
+main.changeState("thanks")
 
 require("src/loop.lua")(main)
 
