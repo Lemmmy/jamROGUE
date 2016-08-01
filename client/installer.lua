@@ -73,6 +73,7 @@ local files = {
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/states/state_login.lua"] = "src/states/state_login.lua",
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/states/state_menu.lua"] = "src/states/state_menu.lua",
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/states/state_register.lua"] = "src/states/state_register.lua",
+    ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/states/state_thanks.lua"] = "src/states/state_thanks.lua",
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/entities/entity.lua"] = "src/entities/entity.lua",
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/entities/entity_chest.lua"] = "src/entities/entity_chest.lua",
     ["https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/src/entities/entity_dropped_item.lua"] = "src/entities/entity_dropped_item.lua",
