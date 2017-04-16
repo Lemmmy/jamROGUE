@@ -28,7 +28,7 @@ jamROGUE is a fully realtime multiplayer roguelike for ComputerCraft, originally
 
 
 # Client
-You can download the client installer by running `pastebin run t9aev7fA`.
+You can download the client installer by running `pastebin run 38V4mw7Q`.
 
 ## Recommended Environment
 jamROGUE is developed and tested in [CCEmuRedux](http://www.computercraft.info/forums2/index.php?/topic/18789-ccemuredux-computercraft-emulator-redux/). It has been claimed to run perfectly in-game too, though ComputerCraft 1.76 or above is required due to the use of the new font. CCLite does not work.
