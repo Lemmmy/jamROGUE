@@ -13,7 +13,7 @@ main.states = {
     thanks = require("src/states/state_thanks.lua")
 }
 
-main.state = "thanks"
+main.state = "menu"
 main.stateStartTime = os.clock()
 main.stateTime = 1
 
@@ -29,7 +29,7 @@ function main.changeState(dest)
     end
 end
 
-main.changeState("thanks")
+main.changeState("menu")
 
 require("src/loop.lua")(main)
 
