@@ -5,7 +5,7 @@ end
 sleep(0.1)
 
 local version = "0.06"
-local repoURL = "https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client"
+local repoURL = "https://raw.githubusercontent.com/Lemmmy/jamROGUE/master/client"
 
 local versionCheck = http.get(repoURL.."/VERSION?" .. textutils.urlEncode(os.clock()))
 
