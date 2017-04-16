@@ -5,8 +5,9 @@ end
 sleep(0.1)
 
 local version = "0.06"
+local repoURL = "https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client"
 
-local versionCheck = http.get("https://raw.githubusercontent.com/Lemmmy/CCJam-2016/master/client/VERSION?" .. textutils.urlEncode(os.clock()))
+local versionCheck = http.get(repoURL.."/VERSION?" .. textutils.urlEncode(os.clock()))
 
 if versionCheck then
     local latest = versionCheck.readAll()
@@ -16,7 +17,12 @@ if versionCheck then
         term.setCursorPos(1, 1)
         print("Not the latest version - running the updater\n")
         print("Current: " .. version .. " Latest: " .. latest .. "\n")
-        shell.run("pastebin run t9aev7fA")
+        local installer = http.get(repoURL.."/installer.lua")
+        if installer then
+            local inst = loadstring(installer.readAll(), "installer")
+            setfenv(inst, getfenv())
+            inst()
+        end
         return
     end
 end
