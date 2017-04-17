@@ -46,7 +46,7 @@ jamROGUE is developed and tested in [CCEmuRedux](http://www.computercraft.info/f
 
 ## Rooms
 ### Spawn Room
-This is the room every player spawns in when the dungeon is created, and returns to after death. Mobs never spawn in this room - it is a safe room.  
+This is the room every player spawns in when the dungeon is created, and returns to after death. Mobs never spawn in this room - it is a safe room.   
 ![Green Room](https://img.crzd.me/jamrogue-room-green.png)
 ### Hallway
 These nameless rooms simply serve as a connection between rooms. Mobs never spawn in hallways.  
