@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="jamROGUE - A Multiplayer Roguelike for ComputerCraft" src="http://jamrogue.lemmmy.pw/banner.png" />
+	<img alt="jamROGUE - A Multiplayer Roguelike for ComputerCraft" src="https://img.crzd.me/jamrogue-banner.png" />
 </p>
 
 jamROGUE is a fully realtime multiplayer roguelike for ComputerCraft, originally made for CCJam 2016. It features a large dungeon which players can explore solo or together in a shared world, fighting mobs and collecting items. jamROGUE is currently in **Alpha**.
@@ -37,7 +37,7 @@ jamROGUE is developed and tested in [CCEmuRedux](http://www.computercraft.info/f
 
 ## Controls
 <p align="center">
-	<img src="http://jamrogue.lemmmy.pw/controls.png" />
+	<img src="https://img.crzd.me/jamrogue-controls.png" />
 </p>
 
 - **WASD / Arrow Keys** - Move the player
@@ -45,34 +45,41 @@ jamROGUE is developed and tested in [CCEmuRedux](http://www.computercraft.info/f
 - **Right Click** - Interact with an item, player or mob, also quick-equips items in the inventory
 
 ## Rooms
-### ![Green Room](http://jamrogue.lemmmy.pw/green.png) Spawn Room
-This is the room every player spawns in when the dungeon is created, and returns to after death. Mobs never spawn in this room - it is a safe room.
+### Spawn Room
+This is the room every player spawns in when the dungeon is created, and returns to after death. Mobs never spawn in this room - it is a safe room.  
+![Green Room](https://img.crzd.me/jamrogue-room-green.png)
+### Hallway
+These nameless rooms simply serve as a connection between rooms. Mobs never spawn in hallways.  
+![Grey Room](https://img.crzd.me/jamrogue-room-grey-hallway.png)
 
-### ![Grey Room](http://jamrogue.lemmmy.pw/grey.png) Hallway
-These nameless rooms simply serve as a connection between rooms. Mobs never spawn in hallways.
+### Small Camps
+Also referred to as Monster Camps or just Camps, these rooms often contain a few monsters - usually one or two Goblins.  
+![Grey Room](https://img.crzd.me/jamrogue-room-grey-camp.png)
 
-### ![Grey Room](http://jamrogue.lemmmy.pw/grey.png) Small Camps
-Also referred to as Monster Camps or just Camps, these rooms often contain a few monsters - usually one or two Goblins.
+### Empty Rooms
+Also referred to as Abandoned Rooms, these rooms are usually empty and filled with Pebbles and Rocks. They additionally have a 65% chance of containing Chest Keys.  
+![Grey Room](https://img.crzd.me/jamrogue-room-grey-empty.png)
 
-### ![Grey Room](http://jamrogue.lemmmy.pw/grey.png) Empty Rooms
-Also referred to as Abandoned Rooms, these rooms are usually empty and filled with Pebbles and Rocks. They additionally have a 65% chance of containing Chest Keys.
+### Monster Rooms
+Seen as Monsters, Sewers, Mobs, Dungeons or Cells - these small rooms usually contain one to four bats or rats as well as one to three chests, with a 20% chance of any of those chests being locked chests.  
+![Grey Room](https://img.crzd.me/jamrogue-room-grey-mobs.png)
 
-### ![Grey Room](http://jamrogue.lemmmy.pw/grey.png) Monster Rooms
-Seen as Monsters, Sewers, Mobs, Dungeons or Cells - these small rooms usually contain one to four bats or rats as well as one to three chests, with a 20% chance of any of those chests being locked chests.
+### Loot Rooms
+Loot rooms, seen as Treasuries, Storage Rooms, Armouries or Abandoned Camps; these big rooms contain a large amount of chests.  
+![Red Room](https://img.crzd.me/jamrogue-room-red-treasury.png)
 
-### ![Red Room](http://jamrogue.lemmmy.pw/red.png) Loot Rooms
-Loot rooms, seen as Treasuries, Storage Rooms, Armouries or Abandoned Camps; these big rooms contain a large amount of chests.
+### Camps
+These large camps contain two to six Goblins or Dwarves - be ready for these!  
+![Red Room](https://img.crzd.me/jamrogue-room-red-camp.png)
 
-### ![Red Room](http://jamrogue.lemmmy.pw/red.png) Camps
-These large camps contain two to six Goblins or Dwarves - be ready for these!
-
-### ![Red Room](http://jamrogue.lemmmy.pw/red.png) Bosses
-These large Boss rooms contain two or three Lizards or Serpents, as well as one to three locked chests. They are tough.
+### Bosses
+These large Boss rooms contain two or three Lizards or Serpents, as well as one to three locked chests. They are tough.  
+![Red Room](https://img.crzd.me/jamrogue-room-red-lair.png)
 
 ## Mobs
 
-###Rat
-![Rat](http://jamrogue.lemmmy.pw/rat.png)<br />
+### Rat
+![Rat](https://img.crzd.me/jamrogue-mob-rat.png)<br />
 **Health:** 2.0<br />
 **Damage:** 1.0<br />
 **Damage Ticks:** 15<br />
@@ -80,8 +87,8 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Critical Hit Multiplier:** 1.0x<br />
 **Drops:** Poop, *throwables*, *projectiles*<br />
 
-###Bat
-![Bat](http://jamrogue.lemmmy.pw/bat.png)<br />
+### Bat
+![Bat](https://img.crzd.me/jamrogue-mob-bat.png)<br />
 **Health:** 2.0<br />
 **Damage:** 1.0<br />
 **Damage Ticks:** 12<br />
@@ -89,8 +96,8 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Critical Hit Multiplier:** 1.0x<br />
 **Drops:** *throwables*, *projectiles*<br />
 
-###Goblin
-![Goblin](http://jamrogue.lemmmy.pw/goblin.png)<br />
+### Goblin
+![Goblin](https://img.crzd.me/jamrogue-mob-goblin.png)<br />
 **Health:** 5.0<br />
 **Damage:** 1.0<br />
 **Damage Ticks:** 15<br />
@@ -98,8 +105,8 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Critical Hit Multiplier:** 2.0x<br />
 **Drops:** *melee*, *throwables*, *projectiles*<br />
 
-###Dwarf
-![Dwarf](http://jamrogue.lemmmy.pw/dwarf.png)<br />
+### Dwarf
+![Dwarf](https://img.crzd.me/jamrogue-mob-dwarf.png)<br />
 **Health:** 5.0<br />
 **Damage:** 2.0<br />
 **Damage Ticks:** 20<br />
@@ -107,8 +114,8 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Critical Hit Multiplier:** 2.0x<br />
 **Drops:** *shooters*, *projectiles*<br />
 
-###Lizard
-![Lizard](http://jamrogue.lemmmy.pw/lizard.png)<br />
+### Lizard
+![Lizard](https://img.crzd.me/jamrogue-mob-lizard.png)<br />
 **Health:** 8.0<br />
 **Damage:** 2.0<br />
 **Damage Ticks:** 30<br />
@@ -116,8 +123,8 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Critical Hit Multiplier:** 2.0x<br />
 **Drops:** *consumables*<br />
 
-###Serpent
-![Serpent](http://jamrogue.lemmmy.pw/serpent.png)<br />
+### Serpent
+![Serpent](https://img.crzd.me/jamrogue-mob-serpent.png)<br />
 **Health:** 7.0<br />
 **Damage:** 3.0<br />
 **Damage Ticks:** 30<br />
@@ -126,66 +133,66 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 **Drops:** *consumables*<br />
 
 ## Item Rarities
-![Common](http://jamrogue.lemmmy.pw/common.png)<br />
+![Common](https://img.crzd.me/jamrogue-rare-common.png)<br />
 **Minimum Level:** Level 1<br />
 **Damage Multiplier:** 1.0x<br /><br />
-![Regular](http://jamrogue.lemmmy.pw/regular.png)<br />
+![Regular](https://img.crzd.me/jamrogue-rare-regular.png)<br />
 **Minimum Level:** Level 2<br />
 **Damage Multiplier:** 1.2x<br /><br />
-![Superb](http://jamrogue.lemmmy.pw/superb.png)<br />
+![Superb](https://img.crzd.me/jamrogue-rare-superb.png)<br />
 **Minimum Level:** Level 4<br />
 **Damage Multiplier:** 1.5x<br /><br />
-![Rare](http://jamrogue.lemmmy.pw/rare.png)<br />
+![Rare](https://img.crzd.me/jamrogue-rare-rare.png)<br />
 **Minimum Level:** Level 6<br />
 **Damage Multiplier:** 2.0x<br /><br />
-![Legendary](http://jamrogue.lemmmy.pw/legendary.png)<br />
+![Legendary](https://img.crzd.me/jamrogue-rare-legendary.png)<br />
 **Minimum Level:** Level 8<br />
 **Damage Multiplier:** 3.0x<br /><br />
-![Exalted](http://jamrogue.lemmmy.pw/exalted.png)<br />
+![Exalted](https://img.crzd.me/jamrogue-rare-exalted.png)<br />
 **Minimum Level:** Level 10<br />
 **Damage Multiplier:** 4.0x<br /><br />
-![Epic](http://jamrogue.lemmmy.pw/epic.png)<br />
+![Epic](https://img.crzd.me/jamrogue-rare-epic.png)<br />
 **Minimum Level:** Level 15<br />
 **Damage Multiplier:** 5.0x<br /><br />
 
 ## Items
 
-###Rusty Sword (melee)
+### Rusty Sword (melee)
 *It's a Rusty Sword, looks pretty old.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1
 
-###Club (melee)
+### Club (melee)
 *Some sort of Club from somewhere.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1
 
-###Stick (melee)
+### Stick (melee)
 *It's a Stick but do we even have trees down here?*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1
 
-###Branch (melee)
+### Branch (melee)
 *It's a Branch - is this really any better than a stick?*<br />
 **Minimum Level:** Level 2<br />
 **Damage:** 2
 
-###Knife (melee)
+### Knife (melee)
 *Equally useful in the kitchen and the dungeon.*<br />
 **Minimum Level:** Level 5<br />
 **Damage:** 3
 
-###Sword (melee)
+### Sword (melee)
 *It's a Sword, looks sturdy.*<br />
 **Minimum Level:** Level 5<br />
 **Damage:** 3
 
-###Shortsword (melee)
+### Shortsword (melee)
 *It's a Shortsword, short and swift.*<br />
 **Minimum Level:** Level 10<br />
 **Damage:** 4
 
-###Longsword (melee)
+### Longsword (melee)
 *It's a Longsword.*<br />
 **Minimum Level:** Level 13<br />
 **Damage:** 5
@@ -194,28 +201,28 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 ----------
 
 
-###Rock (throwable)
+### Rock (throwable)
 *Just a rock.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1<br />
 **Range:** 6<br />
 **Maximum Stack:** 8
 
-###Brick (throwable)
+### Brick (throwable)
 *Just a brick.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1<br />
 **Range:** 5<br />
 **Maximum Stack:** 10
 
-###Can (throwable)
+### Can (throwable)
 *Just a can.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1.0<br />
 **Range:** 0<br />
 **Maximum Stack:** 20
 
-###Boulder (throwable)
+### Boulder (throwable)
 *How do you carry this?.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 5.0<br />
@@ -226,31 +233,31 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 ----------
 
 
-###Slingshot (shooter)
+### Slingshot (shooter)
 *It's a Slingshot - looks like it requires pebbles.*<br />
 **Minimum Level:** Level 1<br />
 **Range:** 8<br />
 **Projectiles:** Pebble
 
-###Flismy Bow (shooter)
+### Flismy Bow (shooter)
 *It's a Flimsy Bow.*<br />
 **Minimum Level:** Level 2<br />
 **Range:** 12<br />
 **Projectiles:** Arrow
 
-###Bow (shooter)
+### Bow (shooter)
 *It's a Bow.*<br />
 **Minimum Level:** Level 5<br />
 **Range:** 15<br />
 **Projectiles:** Arrow
 
-###Strong Bow (shooter)
+### Strong Bow (shooter)
 *It's a Strong Bow.*<br />
 **Minimum Level:** Level 10<br />
 **Range:** 18<br />
 **Projectiles:** Arrow
 
-###Crossbow (shooter)
+### Crossbow (shooter)
 *It's a Strong Bow.*<br />
 **Minimum Level:** Level 12<br />
 **Range:** 20<br />
@@ -260,19 +267,19 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 ----------
 
 
-###Pebble (projectile)
+### Pebble (projectile)
 *Might be useful for a slingshot or something.*<br />
 **Minimum Level:** Level 1<br />
 **Damage:** 1<br />
 **Maximum Stack:** 30
 
-###Arrow (projectile)
+### Arrow (projectile)
 *Sharp and pointy.*<br />
 **Minimum Level:** Level 2<br />
 **Damage:** 2.0<br />
 **Maximum Stack:** 30
 
-###Venom Arrow (projectile)
+### Venom Arrow (projectile)
 *Sharp, pointy and venomous.*<br />
 **Minimum Level:** Level 6<br />
 **Damage:** 4.0<br />
@@ -282,40 +289,40 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 ----------
 
 
-###Apple (consumable)
+### Apple (consumable)
 *An apple a day keeps the doctor away.*<br />
 **Minimum Level:** Level 1<br />
 **Heals:** 2.0<br />
 **Maximum Stack:** 6
 
-###Water Bottle (consumable)
+### Water Bottle (consumable)
 *It's healthier than soda.*<br />
 **Minimum Level:** Level 1<br />
 **Heals:** 1.0
 
-###Poop (consumable)
+### Poop (consumable)
 *You really don't want to eat this.*<br />
 **Minimum Level:** Level 1<br />
 **Heals:** 1.0<br />
 **Maximum Stack:** 15
 
-###Pineapple (consumable)
+### Pineapple (consumable)
 *A pineapple a day keeps the monsters away.*<br />
 **Minimum Level:** Level 2<br />
 **Heals:** 3.0<br />
 **Maximum Stack:** 4
 
-###Health Potion (consumable)
+### Health Potion (consumable)
 *Looks suspicious, but it says health on it!*<br />
 **Minimum Level:** Level 4<br />
 **Heals:** 5.0
 
-###Health Vial (consumable)
+### Health Vial (consumable)
 *Looks suspicious, but it says health on it!*<br />
 **Minimum Level:** Level 6<br />
 **Heals:** 8.0
 
-###Cake (consumable)
+### Cake (consumable)
 *Lucky find.*<br />
 **Minimum Level:** Level 8<br />
 **Heals:** 10.0
@@ -324,7 +331,7 @@ These large Boss rooms contain two or three Lizards or Serpents, as well as one 
 ----------
 
 
-###Chest Key (misc)
+### Chest Key (misc)
 *A flimsy key that probably only works once.*<br />
 **Minimum Level:** Level 1
 
