@@ -386,7 +386,9 @@ local function worldToViewportPos(x, y)
 end
 
 local function viewportToWorldPos(x, y)
-    return floor((game.viewportCenterX - (game.viewportWidth / 2)) + x), floor((game.viewportCenterY - (game.viewportHeight / 2)) + y)
+    local wx = floor((game.viewportCenterX - (game.viewportWidth / 2)) + x) - (1 - game.viewportWidth % 2)
+    local wy = floor((game.viewportCenterY - (game.viewportHeight / 2)) + y) - (1 - game.viewportHeight % 2)
+    return wx, wy
 end
 
 function game.drawGame()
