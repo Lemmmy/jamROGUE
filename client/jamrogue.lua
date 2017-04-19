@@ -36,10 +36,10 @@ local constants = require("src/constants.lua")
 local function checkUpdate()
     local repoURL = "https://raw.githubusercontent.com/Lemmmy/jamROGUE/master/client"
 
-    local versionCheck = http.get(repoURL.."/VERSION?" .. textutils.urlEncode(os.clock()))
+    local versionCheck = http.get(repoURL.."/src/constants.lua?" .. textutils.urlEncode(os.clock()))
 
     if versionCheck then
-        local latest = versionCheck.readAll()
+        local latest = loadstring(versionCheck.readAll())().version
         local version = constants.version
 
         if version ~= latest then
