@@ -162,7 +162,7 @@ let items = {
 			description: "It's healthier than soda.",
 			minLevel: 0,
 			heal: 1,
-			verb: "drink",
+			verb: "drank",
 			subType: "healing"
 		},
 		{
@@ -186,6 +186,7 @@ let items = {
 			description: "Looks suspicious, but it says health on it!",
 			minLevel: 4,
 			heal: 5,
+			verb: "drank",
 			subType: "healing"
 		},
 		{
@@ -193,6 +194,7 @@ let items = {
 			description: "Looks suspicious, but it says health on it!",
 			minLevel: 6,
 			heal: 8,
+			verb: "drank",
 			subType: "healing"
 		},
 		{
