@@ -50,7 +50,7 @@ export default app => {
 
 		player.addEvent("server_message", {
 			fancy: true,
-			text: "You dropped " + (dropItem.count && dropItem.count > 1 ? ("a" + (dropItem.rarity ? (/^[aeiou]/i.test(dropItem.rarity) ? "n" : "") : (/^[aeiou]/i.test(dropItem.name) ? "n" : ""))) : "the") + " &" + CCColours.colourToHex(dropItem.item.rarity ? dropItem.item.colour : CCColours.white) + (dropItem.item.rarity ? dropItem.item.rarity + " " : "") + dropItem.item.name + "&0" + "."
+			text: "You dropped " + ((dropItem.count && dropItem.count > 1) ? ("a" + (dropItem.rarity ? (/^[aeiou]/i.test(dropItem.rarity) ? "n" : "") : (/^[aeiou]/i.test(dropItem.item.name) ? "n" : ""))) : "the") + " &" + CCColours.colourToHex(dropItem.item.rarity ? dropItem.item.colour : CCColours.white) + (dropItem.item.rarity ? dropItem.item.rarity + " " : "") + dropItem.item.name + "&0" + "."
 		});
 
 		if (dropItem.count <= 1) {
