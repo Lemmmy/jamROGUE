@@ -711,7 +711,11 @@ function game.mouseClick(button, x, y)
                     elseif y == game.itemMenuItem + 9 then
                         http.request(constants.server .. "game/equip", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (game.itemMenuItem - 1))
                     elseif y == game.itemMenuItem + 10 then
-                        http.request(constants.server .. "game/drop", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (game.itemMenuItem - 1))
+                        local item = game.main.connection.player.inventory[game.itemMenuItem]
+                        local count = (item and item.count) or 1
+                        for i = 1, count do
+                            http.request(constants.server .. "game/drop", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. (game.itemMenuItem - 1))
+                        end
                     end
 
                     game.itemMenuShowing = false
