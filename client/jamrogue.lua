@@ -52,8 +52,8 @@ local function checkUpdate()
                 local inst = loadstring(installer.readAll(), "installer")
                 setfenv(inst, getfenv())
                 inst()
+                return true
             end
-            return
         end
     end
 end
