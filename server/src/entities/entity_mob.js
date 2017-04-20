@@ -189,20 +189,21 @@ class EntityMob extends Entity {
 		}
 
 		let equippedItem = _.find(player.inventory, "equipped");
+		
+		if (!equippedItem) {
+                        player.addEvent("server_message", {
+                                text: `You swing your hands at the ${this.name} but nothing happens.`,
+                                colour: CCColours.red
+                        });
+
+                        return player.notify();
+                }
+
 		let itemName = (equippedItem.count && equippedItem.count > 1 ?
 						("a" + (equippedItem.item.rarity ? (/^[aeiou]/i.test(equippedItem.item.rarity) ? "n" : "") :
 						(/^[aeiou]/i.test(equippedItem.item.name) ? "n" : ""))) : "the") +
 						" &" + CCColours.colourToHex(equippedItem.item.rarity ? equippedItem.item.colour : CCColours.white) +
 						(equippedItem.item.rarity ? equippedItem.item.rarity + " " : "") + equippedItem.item.name;
-
-		if (!equippedItem) {
-			player.addEvent("server_message", {
-				text: `You swing your hands at the ${this.name} but nothing happens.`,
-				colour: CCColours.red
-			});
-
-			return player.notify();
-		}
 
 		let distance = this.Game.playerDistancePoint(player, this.x, this.y);
 
