@@ -191,13 +191,13 @@ class EntityMob extends Entity {
 		let equippedItem = _.find(player.inventory, "equipped");
 		
 		if (!equippedItem) {
-                        player.addEvent("server_message", {
-                                text: `You swing your hands at the ${this.name} but nothing happens.`,
-                                colour: CCColours.red
-                        });
+			player.addEvent("server_message", {
+				text: `You swing your hands at the ${this.name} but nothing happens.`,
+				colour: CCColours.red
+			});
 
-                        return player.notify();
-                }
+			return player.notify();
+		}
 
 		let itemName = (equippedItem.count && equippedItem.count > 1 ?
 						("a" + (equippedItem.item.rarity ? (/^[aeiou]/i.test(equippedItem.item.rarity) ? "n" : "") :

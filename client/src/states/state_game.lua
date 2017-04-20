@@ -510,7 +510,7 @@ function game.drawRooms()
                 local roomType = room.type
 
                 if  worldLeft    <= room.x + roomWidth and
-                    worldRight    >= room.x and
+                    worldRight   >= room.x and
                     worldTop     <= room.y + roomHeight and
                     worldBottom  >= room.y then
                     local roomStartX, roomStartY = worldToViewportPos(room.x, room.y)
