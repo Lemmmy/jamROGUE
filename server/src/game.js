@@ -251,7 +251,7 @@ let Game = {
 		}
 	},
 
-	authPlayer(username, password) {
+	authPlayer(username, password, colour) {
 		return new Promise((resolve, reject) => {
 			for (var i = 0; i < Game.players.length; i++) {
 				if (Game.players[i].name.toLowerCase() === username.toLowerCase()) {
@@ -271,7 +271,7 @@ let Game = {
 				let token = hat();
 				console.log(`Player ${user.name} connecting with ${token}`);
 
-				let player = new Player(Game, user.name, token, user);
+				let player = new Player(Game, user.name, token, user, colour);
 				player.room = Game.spawnRoom;
 				player.x = Game.rooms[Game.spawnRoom].x + Game.rooms[Game.spawnRoom].spawnX;
 				player.y = Game.rooms[Game.spawnRoom].y + Game.rooms[Game.spawnRoom].spawnY;

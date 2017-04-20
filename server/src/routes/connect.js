@@ -17,7 +17,11 @@ export default app => {
 			});
 		}
 
-		Game.authPlayer(req.body.name, req.body.password).then(player => {
+		if (!req.body.colour) {
+			req.body.colour = "0";
+		}
+
+		Game.authPlayer(req.body.name, req.body.password, req.body.colour).then(player => {
 			return res.json({
 				ok: true,
 				name: player.name,

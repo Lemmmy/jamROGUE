@@ -6,7 +6,7 @@ import util from "util";
 import _ from "lodash";
 
 class Player {
-	constructor(game, name, token, user) {
+	constructor(game, name, token, user, colour) {
 		this.Game = game;
 
 		this.name = name;
@@ -25,6 +25,8 @@ class Player {
 		this.x = 0;
 		this.y = 0;
 		this.visitedRooms = [];
+
+		this.colour = Math.pow(2, parseInt(colour, 16));
 
 		this.inventory = [];
 
@@ -246,6 +248,7 @@ class Player {
 			x: this.x,
 			y: this.y,
 			name: this.name,
+			colour: this.colour,
 			health: this.health,
 			level: this.level,
 			xp: this.xp,
