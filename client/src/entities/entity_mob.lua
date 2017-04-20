@@ -33,39 +33,18 @@ function EntityMob:interact(token)
 end
 
 function EntityMob:getSymbol()
-    if self.type == "bat" then
-        return math.floor(os.clock()) % 2 == 0 and "^" or "v"
-    elseif self.type == "rat" then
-        return "~"
-    elseif self.type == "goblin" then
-        return "\5"
-    elseif self.type == "dwarf" then
-        return "\6"
-    elseif self.type == "lizard" then
-        return "Y"
-    elseif self.type == "serpent" then
-        return "\36"
+    local symbol = constants.mobs[self.type] and constants.mobs[self.type].symbol
+    if type(symbol) == "string" then
+        return symbol
+    elseif type(symbol) == "table" then
+        return symbol[math.floor(os.clock()) % #symbol + 1]
+    else
+        return "\164"
     end
-
-    return "\164"
 end
 
 function EntityMob:getColour()
-    if self.type == "bat" then
-        return colours.brown
-    elseif self.type == "rat" then
-        return colours.brown
-    elseif self.type == "goblin" then
-        return colours.green
-    elseif self.type == "dwarf" then
-        return colours.orange
-    elseif self.type == "lizard" then
-        return colours.orange
-    elseif self.type == "serpent" then
-        return colours.green
-    end
-
-    return colours.red
+    return (constants.mobs[self.type] and constants.mobs[self.type].colour) or colours.red
 end
 
 return EntityMob
