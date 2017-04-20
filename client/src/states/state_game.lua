@@ -1019,7 +1019,7 @@ function game.serverMessage(data)
 end
 
 function game.chat(data)
-    game.print("<" .. data.from .. "> " .. data.message, data.from:lower() == game.main.connection.player.name:lower() and colours.white or colours.lightGrey)
+    game.printFancy("<&" .. string.format("%01x", math.log(tonumber(data.colour)) / math.log(2)) .. data.from .. "&0> " .. data.message, data.from:lower() == game.main.connection.player.name:lower() and colours.white or colours.lightGrey)
 end
 
 function game.damage(data)
