@@ -1,6 +1,6 @@
 return {
     server = "http://jamrogue.crzd.me/",
-    version = "0.06",
+    version = "0.07",
 
     mobs = {
         bat = {symbol = {"^", "v"}, colour = colours.brown},
