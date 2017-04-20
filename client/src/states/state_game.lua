@@ -510,7 +510,7 @@ function game.drawRooms()
                 local roomType = room.type
 
                 if  worldLeft    <= room.x + roomWidth and
-                    worldRight	  >= room.x and
+                    worldRight    >= room.x and
                     worldTop     <= room.y + roomHeight and
                     worldBottom  >= room.y then
                     local roomStartX, roomStartY = worldToViewportPos(room.x, room.y)
@@ -799,6 +799,19 @@ function game.mouseClick(button, x, y)
                         end
 
                         return
+                    end
+                end
+            end
+        end
+    elseif button == 3 then
+        if x >= w - 19 and x <= w then
+            if game.sidebarScreen == 0 then
+                if y >= 8 and game.main.connection.player and game.main.connection.player.inventory and game.main.connection.player.inventory[y - 7] then
+                    local menuItem = y - 8
+                    local item = game.main.connection.player.inventory[menuItem + 1]
+                    local count = (item and item.count) or 1
+                    for i = 1, count do
+                        http.request(constants.server .. "game/drop", "token=" .. textutils.urlEncode(game.main.connection.token) .. "&item=" .. menuItem)
                     end
                 end
             end
