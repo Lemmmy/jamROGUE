@@ -948,6 +948,7 @@ function game.spawn(data)
     game.main.connection.player.inventory = data.player.inventory
     game.main.connection.player.alive = data.player.alive
 
+    game.main.connection.players = {}
     for _, player in ipairs(data.players) do
         if player.name:lower() ~= data.player.name:lower() then
             local poop = Player(player.roomID, player.x, player.y, player.name)
