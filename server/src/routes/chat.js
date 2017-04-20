@@ -32,6 +32,7 @@ export default app => {
 		let nearby = Game.playersNear(player, 30);
 		let ev = {
 			from: player.name,
+			colour: player.colour,
 			message: message
 		};
 
