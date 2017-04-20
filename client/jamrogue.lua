@@ -75,5 +75,15 @@ end
 local ok, msg = pcall(run)
 
 if not ok then
-    print(msg)
+    term.setBackgroundColour(colours.black)
+    term.setTextColour(colours.white)
+    term.clear()
+    term.setCursorPos(1, 1)
+    if msg ~= "Terminated" then
+        print("jamROGUE has crashed.")
+        print("Please report this error and optionally the steps to reproduce it on the GitHub issues page:")
+        term.setTextColour(colours.red)
+        print(msg)
+        term.setTextColour(colours.white)
+    end
 end
