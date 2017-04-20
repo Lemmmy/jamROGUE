@@ -14,6 +14,15 @@ function login.init(main)
     login.focusedItem = 0
     login.errorText = ""
     login.latestLoginURL = ""
+    login.remember = false
+
+    local handle = fs.open(resolveFile(".login"), "r")
+    if handle then
+        login.remember = handle.readLine():lower() == "true"
+        login.username = handle.readLine()
+        login.password = handle.readLine()
+        handle.close()
+    end
 end
 
 function login.httpSuccess(url, response)
@@ -102,8 +111,15 @@ function login.draw()
     buffer.write(("*"):rep(math.min(#login.password, w - 7)))
     buffer.setBackgroundColour(colours.black)
 
+    buffer.setCursorPos(4, 13)
+    buffer.write("Remember ")
+    buffer.setBackgroundColour(login.remember and colours.lightGrey or colours.grey)
+    buffer.write(login.remember and "x" or " ")
+    buffer.setBackgroundColour(colours.black)
+    
+
     if login.errorText then
-        buffer.setCursorPos(4, 14)
+        buffer.setCursorPos(4, 15)
         buffer.setTextColour(colours.red)
         buffer.write(login.errorText)
         buffer.setTextColour(colours.white)
@@ -160,6 +176,8 @@ function login.mouseClick(button, x, y)
             login.focusedItem = 0
         elseif x >= 4 and x <= w - 4 and y == 11 then
             login.focusedItem = 1
+        elseif x == 13 and y == 13 then
+            login.remember = not login.remember
         elseif x >= w - (#"Log in" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
             login.login()
         end
@@ -209,6 +227,14 @@ function login.login()
         login.errorText = "Missing password"
 
         return
+    end
+
+    local handle = fs.open(resolveFile(".login"), "w")
+    if handle then
+        handle.writeLine(tostring(login.remember))
+        handle.writeLine(login.remember and login.username or "")
+        handle.writeLine(login.remember and login.password or "")
+        handle.close()
     end
 
     local url = constants.server .. "connect"
