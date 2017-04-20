@@ -15,12 +15,14 @@ function login.init(main)
     login.errorText = ""
     login.latestLoginURL = ""
     login.remember = false
+    login.colour = 0
 
     local handle = fs.open(resolveFile(".login"), "r")
     if handle then
         login.remember = handle.readLine():lower() == "true"
         login.username = handle.readLine()
         login.password = handle.readLine()
+        login.colour = tonumber(handle.readLine(), 16) or 0
         handle.close()
     end
 end
@@ -116,7 +118,20 @@ function login.draw()
     buffer.setBackgroundColour(login.remember and colours.lightGrey or colours.grey)
     buffer.write(login.remember and "x" or " ")
     buffer.setBackgroundColour(colours.black)
-    
+
+    buffer.write("  Colour ")
+    for i = 0, 14 do
+        buffer.setBackgroundColour(2 ^ i)
+        if i == 0 then
+            buffer.setTextColour(colours.grey)
+        end
+        buffer.write((login.colour == i) and "x" or " ")
+        if i == 0 then
+            buffer.setTextColour(colours.white)
+        end
+    end
+    buffer.setBackgroundColour(colours.black)
+
 
     if login.errorText then
         buffer.setCursorPos(4, 15)
@@ -178,6 +193,8 @@ function login.mouseClick(button, x, y)
             login.focusedItem = 1
         elseif x == 13 and y == 13 then
             login.remember = not login.remember
+        elseif x >= 23 and x <= 37 and y == 13 then
+            login.colour = x - 23
         elseif x >= w - (#"Log in" + 7) and x <= w - 4 and y >= h - 3 and y <= h - 1 then
             login.login()
         end
@@ -234,6 +251,7 @@ function login.login()
         handle.writeLine(tostring(login.remember))
         handle.writeLine(login.remember and login.username or "")
         handle.writeLine(login.remember and login.password or "")
+        handle.writeLine(string.format("%01x", login.colour))
         handle.close()
     end
 
@@ -241,7 +259,7 @@ function login.login()
 
     login.latestLoginURL = url
 
-    http.request(url, "name=" .. textutils.urlEncode(login.username):gsub("+", "%%20") .. "&password=" .. textutils.urlEncode(login.password):gsub("+", "%%20"))
+    http.request(url, "name=" .. textutils.urlEncode(login.username):gsub("+", "%%20") .. "&password=" .. textutils.urlEncode(login.password):gsub("+", "%%20") .. "&colour=" .. string.format("%01x", login.colour))
 end
 
 return login

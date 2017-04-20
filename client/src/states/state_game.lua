@@ -639,6 +639,7 @@ function game.drawEntities()
         local playerX, playerY = worldToViewportPos(player.x, player.y)
         if playerX >= 1 and playerY >= 1 and playerX <= game.viewportWidth + 1 and playerY <= game.viewportHeight + 1 then
             game.viewportWindow.setCursorPos(playerX, playerY)
+            game.viewportWindow.setTextColour(player.colour)
             game.viewportWindow.write("\2")
         end -- my life
     end
@@ -647,6 +648,7 @@ function game.drawEntities()
     if game.main.connection.player then
         local playerX, playerY = worldToViewportPos(game.main.connection.player.x, game.main.connection.player.y)
         game.viewportWindow.setCursorPos(playerX, playerY)
+        game.viewportWindow.setTextColour(game.main.connection.player.colour)
         game.viewportWindow.write("\2")
     end
 end
@@ -947,6 +949,7 @@ function game.spawn(data)
     game.main.connection.player.xp = data.player.xp
     game.main.connection.player.inventory = data.player.inventory
     game.main.connection.player.alive = data.player.alive
+    game.main.connection.player.colour = data.player.colour
 
     game.main.connection.players = {}
     for _, player in ipairs(data.players) do
@@ -955,6 +958,7 @@ function game.spawn(data)
             poop.health = player.health
             poop.level = player.level
             poop.xp = player.xp
+            poop.colour = player.colour
 
             table.insert(game.main.connection.players, poop)
         end
@@ -966,6 +970,7 @@ function game.join(data)
     poop.health = data.health
     poop.level = data.level
     poop.xp = data.xp
+    poop.colour = data.colour
 
     table.insert(game.main.connection.players, poop)
 end
