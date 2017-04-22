@@ -70,6 +70,13 @@ class EntityChest extends Entity {
 				let type = r < 0.25 ? "melee" : r < 0.4 ? "projectile" : r < 0.8 ? "consumable" : "shooter";
 				let item = Item.randomItem(type, player.level);
 
+				if (this.locked && key.item.type === "melee" && Math.random() >= 0.5) {
+					player.inventory.splice(player.inventory.indexOf(key), 1);
+					player.updateInventory();
+					player.saveInventory();
+					return player.notify();
+				}
+
 				if (player.addToInventory(item, this.locked ? 1 : 0)) {
 					if (this.locked) {
 						player.inventory.splice(player.inventory.indexOf(key), 1);
