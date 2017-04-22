@@ -31,6 +31,40 @@ class EntityChest extends Entity {
 				key = _.find(player.inventory, i => { return i.item instanceof Item ? (i.item.serialize().subType && i.item.serialize().subType === "chest_key") : i.item.subType === "chest_key"; });
 			}
 
+			if (!key && this.locked) {
+				let equippedItem = _.find(player.inventory, "equipped");
+				if (!equippedItem) {
+					player.addEvent("server_message", {
+						text: `You swing your hands at the chest but nothing happens.`,
+						colour: CCColours.red
+					});
+
+					return player.notify();
+				}
+
+				let itemName = (equippedItem.count && equippedItem.count > 1 ?
+						("a" + (equippedItem.item.rarity ? (/^[aeiou]/i.test(equippedItem.item.rarity) ? "n" : "") :
+						(/^[aeiou]/i.test(equippedItem.item.name) ? "n" : ""))) : "the") +
+						" &" + CCColours.colourToHex(equippedItem.item.rarity ? equippedItem.item.colour : CCColours.white) +
+						(equippedItem.item.rarity ? equippedItem.item.rarity + " " : "") + equippedItem.item.name;
+
+				if (equippedItem.item.type !== "melee") {
+					player.addEvent("server_message", {
+						text: `&eYou swing ${itemName}&e at the chest but nothing happens.`,
+						fancy: true
+					});
+
+					return player.notify();
+				}
+
+				player.addEvent("server_message", {
+					text: `&eYou swing ${itemName}&e at the chest, and it broke.`,
+					fancy: true
+				});
+				key = equippedItem;
+			}
+
+
 			if ((this.locked && key) || !this.locked) {
 				let r = Math.random();
 				let type = r < 0.25 ? "melee" : r < 0.4 ? "projectile" : r < 0.8 ? "consumable" : "shooter";
