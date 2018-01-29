@@ -933,7 +933,7 @@ function game.updateCent()
             http.request(constants.server .. "game/move",  "token=" .. textutils.urlEncode(game.main.connection.token) ..
                                                             "&x=" .. game.main.connection.player.x ..
                                                             "&y=" .. game.main.connection.player.y ..
-                                                            "&time=" .. textutils.urlEncode(os.clock()))
+                                                            "&time=" .. textutils.urlEncode(tostring(os.clock())))
         end
     end
 end
