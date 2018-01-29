@@ -114,7 +114,7 @@ for _, file in pairs(fs.list(assetsPath)) do
     if file:sub(-4) == ".b64" then
         local data = readFile(assetsPath.."/"..file)
         if data then
-            writeFileBinary(assetsPath.."/"..file:sub(-4), decodeBase64(data))
+            writeFileBinary(assetsPath.."/"..file:sub(1, -5), decodeBase64(data))
         else
             printFancy("&eFailed to decode "..file..", try reinstalling.")
         end
